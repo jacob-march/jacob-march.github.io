@@ -158,7 +158,7 @@ section li::marker { color: var(--muted); }
 .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 32px; margin: 4px 0 18px; }
 .sides > div { padding-left: 14px; border-left: 2px solid var(--accent-line); }
 .sides h3 { margin: 0 0 4px; font-size: 17px; font-weight: 600; color: var(--accent); }
-.sides p { margin: 0; color: var(--muted); }
+.sides p { margin: 0; color: var(--text); }
 @media (max-width: 600px) { .sides { grid-template-columns: 1fr; } }
 
 /* lists with a date column */

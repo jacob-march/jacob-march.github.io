@@ -8,11 +8,12 @@
    Figures, top to bottom
      right  Penrose diagram of the eternal AdS black hole; the ER bridge grows
      left   {5,4} tiling; a boundary interval grows and its entanglement wedge fills in
-     right  two intervals; RT phase transition, then E_W of the connected wedge
+     right  mixed-state holographic secret sharing (three regions, purifier in the gaps)
      left   Page curve of an evaporating black hole, with the replica saddles switching
      right  corotating m = 2 mode on a finite-element mesh around a rotating black hole
      left   light bending around a Schwarzschild black hole
-     right  relativistic perihelion precession                                    */
+     right  MERA; the causal cone of a growing interval
+     left   double trumpet wormhole and the ramp of the spectral form factor        */
 (function () {
   "use strict";
   if (!window.matchMedia || !window.Path2D) return;
@@ -25,7 +26,7 @@
   var C = {};
   function readColors() {
     var cs = getComputedStyle(document.documentElement);
-    ["accent", "muted", "text"].forEach(function (k) {
+    ["accent", "muted", "text", "bg"].forEach(function (k) {
       var h = cs.getPropertyValue("--" + k).trim().replace("#", "");
       if (h.length === 3) h = h.replace(/./g, "$&$&");
       var n = parseInt(h, 16);
@@ -35,6 +36,7 @@
   function col(c, a) { return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + (a == null ? 1 : a) + ")"; }
   function wrapPi(a) { while (a > Math.PI) a -= TAU; while (a < -Math.PI) a += TAU; return a; }
   function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+  function smooth(x) { x = clamp01(x); return x * x * (3 - 2 * x); }
   function polyline(ctx, pts, n) {
     n = n == null ? pts.length : n;
     if (n < 2) return;
@@ -242,49 +244,6 @@
     };
   }
 
-  // Two intervals A, B growing at fixed separation. The RT surface switches from
-  // disconnected to connected; then the wedge of AB is connected and its
-  // cross-section E_W (by symmetry, a segment of the diameter) appears.
-  function TwoIntervals() {
-    function crossing(span) { // signed position on the symmetry axis where the bottom-gap geodesic crosses it
-      var h = span > Math.PI ? TAU - span : span, c = Math.cos(h / 2);
-      var s = Math.abs(c) < 1e-6 ? 0 : (1 - Math.sin(h / 2)) / c;
-      return span > Math.PI ? s : -s;
-    }
-    return {
-      draw: function (ctx, S, p) {
-        var X = S / 2, Y = S / 2, R = S / 2 - 3, top = -Math.PI / 2, g = 0.55;
-        var a = 0.3 + 1.3 * p, gb = TAU - 2 * a - g;
-        var A1 = top - g / 2 - a, A2 = top - g / 2, B1 = top + g / 2, B2 = top + g / 2 + a;
-        var connected = Math.pow(Math.sin(a / 2), 2) > Math.sin(g / 2) * Math.sin(gb / 2);
-        var disk = new Path2D(); disk.arc(X, Y, R, 0, TAU);
-        var geos;
-        ctx.fillStyle = col(C.accent, 0.22);
-        if (connected) {
-          geos = [boundaryGeodesic(A2, B1), boundaryGeodesic(B2, A1 + TAU)];
-          ctx.save(); ctx.clip(disk);
-          clipSide(ctx, geos[0], X, Y, R, S, false);
-          clipSide(ctx, geos[1], X, Y, R, S, false);
-          ctx.fill(disk); ctx.restore();
-        } else {
-          geos = [boundaryGeodesic(A1, A2), boundaryGeodesic(B1, B2)];
-          geos.forEach(function (gg) { ctx.save(); ctx.clip(disk); clipSide(ctx, gg, X, Y, R, S, true); ctx.fill(disk); ctx.restore(); });
-        }
-        ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke(disk);
-        ctx.lineWidth = 1.3; ctx.strokeStyle = col(C.accent);
-        ctx.beginPath(); geos.forEach(function (gg) { geodesicPath(ctx, gg, X, Y, R); }); ctx.stroke();
-        ctx.lineWidth = 2.4;
-        ctx.beginPath(); ctx.arc(X, Y, R, A1, A2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(X, Y, R, B1, B2); ctx.stroke();
-        if (connected) {
-          var s1 = -crossing(g), s2 = crossing(gb);
-          ctx.lineWidth = 1.5; ctx.strokeStyle = col(C.text, 0.85);
-          ctx.beginPath(); ctx.moveTo(X, Y - R * s1); ctx.lineTo(X, Y - R * s2); ctx.stroke();
-        }
-      }
-    };
-  }
-
   // Page curve. Hawking's radiation entropy keeps rising (dashed); the black
   // hole's Bekenstein-Hawking entropy falls as it evaporates (M^3 ~ t_evap - t);
   // the fine-grained entropy follows the smaller of the two.
@@ -298,7 +257,7 @@
     function shaw(t) { return k * (1 - sbh(t)); }
     function replicas(ctx, cx, cy, t) {
       var w = clamp01((t - tPage) / 0.035 + 0.5); w = w * w * (3 - 2 * w);
-      var d = 9.5, R0 = 6.2, nh = 2.6, a = Math.asin(nh / R0), ox = R0 * Math.cos(a);
+      var d = 14, R0 = 9, nh = 3.8, a = Math.asin(nh / R0), ox = R0 * Math.cos(a);
       var Lx = cx - d, Rx = cx + d;
       var joined = new Path2D();
       joined.arc(Lx, cy, R0, -a, a, true);
@@ -339,7 +298,7 @@
         polyline(ctx, pc);
         var end = pc[pc.length - 1];
         ctx.fillStyle = col(C.accent); ctx.beginPath(); ctx.arc(end[0], end[1], 2.3, 0, TAU); ctx.fill();
-        replicas(ctx, X(0.3), Y(1.24), tn);
+        replicas(ctx, X(0.31), Y(1.2), tn);
       }
     };
   }
@@ -437,30 +396,196 @@
     };
   }
 
-  // Bound timelike geodesic of Schwarzschild: u'' = 1/L^2 + 3u^2 - u, with
-  // L^2 = p^2 / (p - 3 - e^2) for semi-latus rectum p = 12 and eccentricity e = 0.5,
-  // so r runs between p/(1+e) = 8 and p/(1-e) = 24 and the orbit precesses ~150 degrees per turn.
-  // The dashed ellipse is the Newtonian orbit with the same p and e.
-  function Precession() {
-    var P = 12, e = 0.5, iL2 = (P - 3 - e * e) / (P * P), view = 25, pts = [], st = [(1 + e) / P, 0], h = 0.004;
-    for (var phi = 0; phi < TAU * 3.3; phi += h) {
-      pts.push([Math.cos(phi) / st[0], -Math.sin(phi) / st[0]]);
-      st = rk4(st, h, function (u) { return iL2 + 3 * u * u - u; });
+  // Bao-Furuya-March, arXiv:2607.16110: three boundary regions A1, A2, A3 of size phi,
+  // evenly spaced; the gaps form the purifier O (mixed state for phi < 2 pi / 3).
+  // RT surfaces of every union are drawn. The centre point is
+  //   phi < pi/3          in no wedge (it belongs to O): unrecoverable;
+  //   pi/3 <= phi < 1.318 only EW(A1A2A3) is connected: all three regions needed;
+  //   phi >= 1.318        the pairwise wedges connect too (darker cell): any two suffice,
+  // reaching the pure-state ADH three-region code at phi = 2 pi / 3.
+  function MixedSharing() {
+    var phi0 = Math.PI / 3, phiPure = 2 * Math.PI / 3, phi1;
+    (function () {
+      var f = function (q) { return Math.sin(Math.PI / 3 - q / 2) * Math.sin(2 * Math.PI / 3 - q / 2) - Math.pow(Math.sin(q / 2), 2); };
+      var a = 1.05, b = 2.0;
+      for (var i = 0; i < 60; i++) { var m = (a + b) / 2; if (f(a) * f(m) <= 0) b = m; else a = m; }
+      phi1 = (a + b) / 2;
+    })();
+    function phiOf(p) { // a third of the scroll in each phase
+      var k = [0.72, phi0 + 0.03, phi1 + 0.03, phiPure - 0.001], u = Math.min(2.9999, 3 * clamp01(p)), i = Math.floor(u);
+      return k[i] + (k[i + 1] - k[i]) * (u - i);
     }
-    var kepler = [];
-    for (var a = 0; a <= TAU + 0.01; a += 0.02) { var r = P / (1 + e * Math.cos(a)); kepler.push([r * Math.cos(a), -r * Math.sin(a)]); }
     return {
       draw: function (ctx, S, p) {
-        var X = S / 2, Y = S / 2, sc = (S / 2 - 3) / view;
-        function map(q) { return [X + sc * q[0], Y + sc * q[1]]; }
-        ctx.setLineDash([1.5, 2.5]); ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.8);
-        polyline(ctx, kepler.map(map)); ctx.setLineDash([]);
-        var n = Math.max(2, Math.round(pts.length * (0.04 + 0.96 * p)));
-        ctx.lineWidth = 1.1; ctx.strokeStyle = col(C.accent, 0.8);
-        polyline(ctx, pts.map(map), n);
-        var end = map(pts[n - 1]);
-        ctx.fillStyle = col(C.accent); ctx.beginPath(); ctx.arc(end[0], end[1], 2.4, 0, TAU); ctx.fill();
-        ctx.fillStyle = HOLE; ctx.beginPath(); ctx.arc(X, Y, 3, 0, TAU); ctx.fill();
+        var X = S / 2, Y = S / 2, R = S / 2 - 3, phi = phiOf(p), g = phiPure - phi;
+        var c = [0, 1, 2].map(function (i) { return -Math.PI / 2 + i * TAU / 3; });
+        var G = c.map(function (ci) { return boundaryGeodesic(ci - phi / 2, ci + phi / 2); });
+        var H = c.map(function (ci, i) { return boundaryGeodesic(ci + phi / 2, c[(i + 1) % 3] - phi / 2 + (i === 2 ? TAU : 0)); });
+        var K = c.map(function (ci, i) { return boundaryGeodesic(c[(i + 1) % 3] + phi / 2, ci - phi / 2 + TAU); });
+        var tri = g < phi, bi = Math.sin(g / 2) * Math.sin((2 * g + phi) / 2) < Math.pow(Math.sin(phi / 2), 2);
+        var disk = new Path2D(); disk.arc(X, Y, R, 0, TAU);
+        ctx.fillStyle = col(C.accent, 0.18);
+        if (tri) {
+          ctx.save(); ctx.clip(disk); H.forEach(function (h) { clipSide(ctx, h, X, Y, R, S, false); }); ctx.fill(disk); ctx.restore();
+        } else {
+          G.forEach(function (gg) { ctx.save(); ctx.clip(disk); clipSide(ctx, gg, X, Y, R, S, true); ctx.fill(disk); ctx.restore(); });
+        }
+        if (bi) {
+          ctx.fillStyle = col(C.accent, 0.26);
+          ctx.save(); ctx.clip(disk);
+          H.forEach(function (h) { clipSide(ctx, h, X, Y, R, S, false); });
+          K.forEach(function (k) { clipSide(ctx, k, X, Y, R, S, false); });
+          ctx.fill(disk); ctx.restore();
+        }
+        ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke(disk);
+        ctx.lineWidth = 1; ctx.strokeStyle = col(C.text, 0.72);
+        ctx.beginPath();
+        G.forEach(function (gg) { geodesicPath(ctx, gg, X, Y, R); });
+        if (tri) H.forEach(function (h) { geodesicPath(ctx, h, X, Y, R); });
+        if (bi) K.forEach(function (k) { geodesicPath(ctx, k, X, Y, R); });
+        ctx.stroke();
+        ctx.lineWidth = 2.6; ctx.strokeStyle = col(C.accent);
+        c.forEach(function (ci) { ctx.beginPath(); ctx.arc(X, Y, R, ci - phi / 2, ci + phi / 2); ctx.stroke(); });
+        ctx.lineWidth = 1.1; ctx.strokeStyle = col(C.text, 0.85); ctx.fillStyle = tri ? col(C.accent) : col(C.bg);
+        ctx.beginPath(); ctx.arc(X, Y, 3.2, 0, TAU); ctx.fill(); ctx.stroke();
+      }
+    };
+  }
+
+  // Binary MERA on 16 sites: disentanglers (squares) and isometries (triangles).
+  // As the interval A grows, its causal cone (green tensors) climbs the network;
+  // only O(1) bonds leave the cone per layer, so S_A ~ log l.
+  function MERA() {
+    var n0 = 16, L = 4;
+    function cone(a, b) {
+      var out = [], n = n0;
+      for (var t = 0; t < L; t++) {
+        var lo = a, hi = b;
+        if (a % 2 === 0 && a >= 2) lo = a - 1;
+        if (b % 2 === 1 && b + 1 <= n - 2) hi = b + 1;
+        out.push({ a: a, b: b, lo: lo, hi: hi, n: n });
+        a = Math.floor(lo / 2); b = Math.floor(hi / 2); n = n / 2;
+      }
+      out.push({ a: a, b: b, lo: a, hi: b, n: n });
+      return out;
+    }
+    return {
+      draw: function (ctx, S, p) {
+        var pad = 6, W = S - 2 * pad, top = 10, bot = S - 10, h = (bot - top) / L;
+        var ell = 2 + Math.round(12 * p), a = Math.floor((n0 - ell) / 2), b = a + ell - 1, cn = cone(a, b);
+        function x(t, j) { var n = n0 >> t; return pad + W * (j + 0.5) / n; }
+        function y(t) { return bot - t * h; }
+        var yD = function (t) { return y(t) - h * 0.3; }, yI = function (t) { return y(t) - h * 0.68; };
+        for (var t = 0; t < L; t++) {
+          var n = n0 >> t;
+          for (var s = 0; s < n; s++) {
+            var hasD = s >= 1 && s <= n - 2, d0 = s % 2 === 1 ? s : s - 1;
+            var inCone = s >= cn[t].lo && s <= cn[t].hi;
+            ctx.strokeStyle = inCone ? col(C.accent, 0.9) : col(C.muted, 0.45); ctx.lineWidth = inCone ? 1.1 : 0.7;
+            ctx.beginPath(); ctx.moveTo(x(t, s), y(t));
+            var xi = (x(t, 2 * Math.floor(s / 2)) + x(t, 2 * Math.floor(s / 2) + 1)) / 2;
+            if (hasD) { var xd = (x(t, d0) + x(t, d0 + 1)) / 2; ctx.lineTo(x(t, s) + (xd - x(t, s)) * 0.35, yD(t)); }
+            ctx.lineTo(xi, yI(t));
+            ctx.stroke();
+          }
+          for (var j = 0; j < n / 2; j++) {
+            var xi2 = x(t + 1, j), ic = j >= cn[t + 1].a && j <= cn[t + 1].b;
+            ctx.strokeStyle = ic ? col(C.accent, 0.9) : col(C.muted, 0.45); ctx.lineWidth = ic ? 1.1 : 0.7;
+            ctx.beginPath(); ctx.moveTo(xi2, yI(t)); ctx.lineTo(xi2, y(t + 1)); ctx.stroke();
+          }
+          for (s = 1; s + 1 <= n - 2; s += 2) {
+            var xd2 = (x(t, s) + x(t, s + 1)) / 2, dc = s + 1 >= cn[t].a && s <= cn[t].b, sz = Math.min(5, W / n * 0.7);
+            ctx.fillStyle = dc ? col(C.accent) : col(C.bg); ctx.strokeStyle = dc ? col(C.accent) : col(C.muted, 0.8); ctx.lineWidth = 0.8;
+            ctx.fillRect(xd2 - sz / 2, yD(t) - sz / 2, sz, sz); ctx.strokeRect(xd2 - sz / 2, yD(t) - sz / 2, sz, sz);
+          }
+          for (j = 0; j < n / 2; j++) {
+            var xc = x(t + 1, j), ic2 = j >= cn[t + 1].a && j <= cn[t + 1].b, tw = Math.min(7, W / n * 1.1), th = tw * 0.8;
+            ctx.beginPath(); ctx.moveTo(xc - tw / 2, yI(t) + th / 2); ctx.lineTo(xc + tw / 2, yI(t) + th / 2); ctx.lineTo(xc, yI(t) - th / 2); ctx.closePath();
+            ctx.fillStyle = ic2 ? col(C.accent) : col(C.bg); ctx.fill();
+            ctx.strokeStyle = ic2 ? col(C.accent) : col(C.muted, 0.8); ctx.lineWidth = 0.8; ctx.stroke();
+          }
+        }
+        ctx.beginPath(); ctx.arc(x(L, 0), y(L) - 3, 3.2, 0, TAU); ctx.fillStyle = col(C.muted, 0.7); ctx.fill();
+        ctx.lineWidth = 2.6; ctx.strokeStyle = col(C.accent); ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(x(0, a) - 2, bot + 4); ctx.lineTo(x(0, b) + 2, bot + 4); ctx.stroke(); ctx.lineCap = "butt";
+        ctx.fillStyle = col(C.text, 0.75);
+        for (s = 0; s < n0; s++) { ctx.beginPath(); ctx.arc(x(0, s), bot, 1.3, 0, TAU); ctx.fill(); }
+      }
+    };
+  }
+
+  // 3D wireframe helper. Points are [x, y, z] with y up; the view yaws by psi
+  // about y, then pitches by chi about x. Segments facing the viewer are drawn
+  // solid, those behind faint, so the surfaces read as see-through shells.
+  function View(cx, cy, psi, chi) {
+    var cp = Math.cos(psi), sp = Math.sin(psi), cc = Math.cos(chi), sc = Math.sin(chi);
+    return function (P) {
+      var x1 = P[0] * cp + P[2] * sp, z1 = -P[0] * sp + P[2] * cp, y1 = P[1];
+      var y2 = y1 * cc - z1 * sc, z2 = y1 * sc + z1 * cc;
+      return [cx + x1, cy - y2, z2];
+    };
+  }
+  // axial: surfaces of revolution about the x-axis judge front/back against the
+  // axis point at the same x, not the origin, so off-centre parts shade correctly.
+  function wire(ctx, lines, proj, front, back, axial) {
+    var pf = new Path2D(), pb = new Path2D();
+    lines.forEach(function (pts) {
+      var q = pts.map(function (P) { var a = proj(P); if (axial) a[2] -= proj([P[0], 0, 0])[2]; return a; });
+      for (var i = 1; i < q.length; i++) {
+        var p = (q[i][2] + q[i - 1][2]) / 2 >= 0 ? pf : pb;
+        p.moveTo(q[i - 1][0], q[i - 1][1]); p.lineTo(q[i][0], q[i][1]);
+      }
+    });
+    ctx.strokeStyle = back[0]; ctx.lineWidth = back[1]; ctx.stroke(pb);
+    ctx.strokeStyle = front[0]; ctx.lineWidth = front[1]; ctx.stroke(pf);
+  }
+
+  // The JT double trumpet: two asymptotic boundaries joined by a neck, a closed
+  // geodesic of length b. In the spectral form factor |Z(beta + iT)|^2 it gives
+  // the linear ramp between the dip and the plateau (Saad-Shenker-Stanford).
+  // Scrolling advances T along the form factor (inset, log-log); the neck glows
+  // while the ramp dominates, and the two halves twist against each other.
+  function DoubleTrumpet() {
+    function sff(T) { return 1 / (1 + Math.pow(T / 2, 3)) + 0.01 * Math.min(T / 160, 1); }
+    var Tdip = 19, TH = 160;
+    return {
+      draw: function (ctx, S, p) {
+        var L = 0.37 * S, r0 = 0.085 * S, a = L / 1.82, cy = 0.33 * S;
+        var logT = 3 * p, T = Math.pow(10, logT), tw = 1.3 * Math.PI * p;
+        var ramp = smooth((logT - Math.log10(Tdip) + 0.15) / 0.3) * (1 - smooth((logT - Math.log10(TH)) / 0.3));
+        function r(x) { return r0 * Math.cosh(x / a); }
+        var proj = View(S / 2, cy, 0.42, 0.12), rings = [], mer = [];
+        for (var i = -5; i <= 5; i++) {
+          var x = L * i / 5, ring = [];
+          for (var k = 0; k <= 48; k++) { var th = TAU * k / 48; ring.push([x, r(x) * Math.cos(th), r(x) * Math.sin(th)]); }
+          rings.push(ring);
+        }
+        for (var j = 0; j < 14; j++) {
+          var m = [];
+          for (var s = 0; s <= 50; s++) {
+            var xx = -L + 2 * L * s / 50, t2 = TAU * j / 14 + tw * Math.tanh(xx / (0.3 * L));
+            m.push([xx, r(xx) * Math.cos(t2), r(xx) * Math.sin(t2)]);
+          }
+          mer.push(m);
+        }
+        wire(ctx, mer.concat(rings.slice(1, -1).filter(function (_, i) { return i !== 4; })), proj, [col(C.muted, 0.75), 0.7], [col(C.muted, 0.25), 0.6], true);
+        wire(ctx, [rings[0], rings[10]], proj, [col(C.accent), 1.8], [col(C.accent, 0.45), 1.2], true);
+        wire(ctx, [rings[5]], proj, [col(C.accent, 0.45 + 0.55 * ramp), 1.4 + 1.2 * ramp], [col(C.accent, 0.3 + 0.4 * ramp), 1 + 0.8 * ramp], true);
+        // form factor inset
+        var x0 = 0.08 * S, x1 = 0.95 * S, yt = 0.68 * S, yb = 0.96 * S, lo = -3.2;
+        function X(lt) { return x0 + (x1 - x0) * lt / 3; }
+        function Y(v) { return yt + (yb - yt) * (Math.log10(v) / lo); }
+        ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.9);
+        ctx.beginPath(); ctx.moveTo(x0, yt - 2); ctx.lineTo(x0, yb); ctx.lineTo(x1, yb); ctx.stroke();
+        ctx.lineWidth = 0.9; ctx.strokeStyle = col(C.muted, 0.4); ctx.setLineDash([1.5, 2]);
+        ctx.beginPath();
+        for (var q = 0; q <= 90; q++) { var lt = 3 * q / 90, v = sff(Math.pow(10, lt)); if (q) ctx.lineTo(X(lt), Y(v)); else ctx.moveTo(X(lt), Y(v)); }
+        ctx.stroke(); ctx.setLineDash([]);
+        ctx.lineWidth = 1.6; ctx.strokeStyle = col(C.accent);
+        ctx.beginPath();
+        for (q = 0; q <= 90; q++) { lt = logT * q / 90; v = sff(Math.pow(10, lt)); if (q) ctx.lineTo(X(lt), Y(v)); else ctx.moveTo(X(lt), Y(v)); }
+        ctx.stroke();
+        ctx.fillStyle = col(C.accent); ctx.beginPath(); ctx.arc(X(logT), Y(sff(T)), 2.2, 0, TAU); ctx.fill();
       }
     };
   }
@@ -468,15 +593,17 @@
   /* =============================================================== driver */
   var page = document.querySelector(".page");
   if (!page) return;
-  // [anchor element, vertical offset, side, figure]; the first sits just below the Research heading.
+  // [anchor element, vertical offset, side, figure], in page order. Sides alternate
+  // right, left, right, ...; the first sits just below the Research heading.
   var specs = [
     ["#research > p", 0, "right", Penrose],
     ["#research > p:last-of-type", 0, "left", Tiling],
-    ["#papers", 0, "right", TwoIntervals],
+    ["#papers", 0, "right", MixedSharing],
     ["#papers .pubs li:nth-child(2)", 0, "left", PageCurve],
     ["#papers .pubs li:nth-child(4)", 0, "right", BlackHoleMode],
     ["#teaching", 0, "left", Lensing],
-    ["#background", 10, "right", Precession]
+    ["#teaching .plain li:nth-child(3)", 0, "right", MERA],
+    ["#background", 10, "left", DoubleTrumpet]
   ];
   var figs = specs.map(function (sp) {
     var anchor = document.querySelector(sp[0]);
@@ -489,10 +616,17 @@
     return { anchor: anchor, dy: sp[1], fig: fig, cv: cv, ctx: cv.getContext("2d"), scene: sp[3](), S: 0, dpr: 0, p: -1 };
   }).filter(Boolean);
 
+  // Each figure goes beside its anchor, but never above the previous figure (so
+  // the sides keep alternating top to bottom) and never overlapping the last
+  // figure on its own side, whatever the text wrapping at this width.
   function place() {
-    var top = page.getBoundingClientRect().top;
+    var top = page.getBoundingClientRect().top, prev = -Infinity, sideEnd = {};
     figs.forEach(function (f) {
-      f.fig.style.top = Math.round(f.anchor.getBoundingClientRect().top - top + f.dy) + "px";
+      var y = f.anchor.getBoundingClientRect().top - top + f.dy, side = f.fig.classList.contains("left") ? "left" : "right";
+      y = Math.max(y, prev + 60, (sideEnd[side] == null ? -Infinity : sideEnd[side] + 24));
+      f.fig.style.top = Math.round(y) + "px";
+      prev = y;
+      sideEnd[side] = y + f.fig.offsetHeight;
       f.docTop = f.fig.getBoundingClientRect().top + window.scrollY;
     });
   }
