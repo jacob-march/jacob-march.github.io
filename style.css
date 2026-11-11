@@ -190,7 +190,7 @@ ul.plain .sub { margin: 3px 0 0; padding: 0; list-style: none; }
 ul.plain .sub li { position: relative; margin: 0; padding-left: 16px; }
 ul.plain .sub li::before { content: "–"; position: absolute; left: 0; color: var(--muted); }
 
-/* ------------------------------------------------------------------ papers */
+/* ------------------------------------------------------------------ publications */
 .pubs { margin: 6px 0 0; padding: 0; list-style: none; }
 .pubs li { margin-bottom: 18px; }
 
@@ -219,20 +219,20 @@ footer p { margin: 0; }
 footer .email { color: inherit; }
 
 /* ------------------------------------------------------------------ margin figures
-   Small diagrams drawn by margins.js, placed in the side margins beside the
-   text and scrolling with it, 20px from the text column; only on screens
-   wide enough to fit them. */
-.mfig { display: none; }
-@media (min-width: 980px) {
+   Small diagrams drawn by margins.js.
+   Windows 900px and wider: in the side margins, 16px from the text, shrinking
+   from 116px to 80px as the margins narrow.
+   Narrower: four of them, one centred between each pair of sections. */
+.mfig { display: none; pointer-events: none; }
+.mfig canvas { display: block; width: 100%; height: 100%; }
+@media (min-width: 900px) {
+  :root { --mfig: clamp(80px, calc((100vw - 740px) / 2), 116px); }
   .page { position: relative; }
-  .mfig {
-    display: block;
-    position: absolute;
-    width: 116px;
-    height: 116px;
-    pointer-events: none;
-  }
-  .mfig.left { left: -112px; }   /* 116px figure, page padding 24px: 20px gap to the text */
-  .mfig.right { right: -112px; }
-  .mfig canvas { display: block; width: 116px; height: 116px; }
+  .mfig.left, .mfig.right { display: block; position: absolute; width: var(--mfig); height: var(--mfig); }
+  .mfig.left { left: calc(8px - var(--mfig)); }     /* page padding 24px: 16px gap to the text */
+  .mfig.right { right: calc(8px - var(--mfig)); }
 }
+.mfig-row { display: flex; justify-content: center; margin-top: 22px; }
+.mfig-row + section { padding-top: 12px; }   /* tighten the space below each figure */
+.mfig-row + footer { margin-top: 8px; }
+.mfig.inline { display: block; width: clamp(120px, 34vw, 150px); height: clamp(120px, 34vw, 150px); }

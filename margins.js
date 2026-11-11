@@ -3,7 +3,8 @@
    scroll position (0 when it enters at the bottom of the screen, or at the top
    of the page; 1 when it leaves at the top, or at the end of the page), so
    reading down the page plays it forward.
-   Screens at least 980px wide only (the margins need room).
+   Windows 900px and wider show all eight in the margins; narrower windows show
+   four of them, one centred between each pair of sections after Research.
 
    Figures, top to bottom
      right  Penrose diagram of the eternal AdS black hole; the ER bridge grows
@@ -19,7 +20,7 @@
   if (!window.matchMedia || !window.Path2D) return;
 
   var TAU = Math.PI * 2;
-  var wide = window.matchMedia("(min-width: 980px)");
+  var wide = window.matchMedia("(min-width: 900px)");
   var HOLE = "rgb(8,10,9)";
 
   /* ------------------------------------------------------------ utilities */
@@ -644,28 +645,58 @@
   // ends level with the bottom of the Education section; the rest are spaced
   // evenly in between, so every gap between consecutive figures is the same.
   var START = "#research > p", END = "#education";
+  // [margin side, figure, also shown on narrow screens?]
   var specs = [
-    ["right", Penrose],
-    ["left", Tiling],
-    ["right", MixedSharing],
-    ["left", PageCurve],
-    ["right", DoubleTrumpet],
-    ["left", Lensing],
-    ["right", MERA],
-    ["left", BlackHoleMode]
+    ["right", Penrose, false],
+    ["left", Tiling, true],
+    ["right", MixedSharing, true],
+    ["left", PageCurve, false],
+    ["right", DoubleTrumpet, true],
+    ["left", Lensing, false],
+    ["right", MERA, true],
+    ["left", BlackHoleMode, false]
   ];
+  // Narrow windows: the four figures marked above, one centred just before each
+  // of these elements, i.e. between Research and Publications, Publications and Teaching,
+  // Teaching and Education, and after Education (above the footer).
+  var ROWS_BEFORE = ["#publications", "#teaching", "#education", ".page > footer"];
   var startEl = document.querySelector(START), endEl = document.querySelector(END);
   if (!startEl || !endEl) return;
   var figs = specs.map(function (sp) {
     var fig = document.createElement("div"), cv = document.createElement("canvas");
-    fig.className = "mfig " + sp[0];
     fig.setAttribute("aria-hidden", "true");
     fig.appendChild(cv);
-    page.appendChild(fig);
-    return { fig: fig, cv: cv, ctx: cv.getContext("2d"), scene: sp[1](), S: 0, dpr: 0, p: -1 };
+    return { fig: fig, cv: cv, ctx: cv.getContext("2d"), scene: sp[1](), side: sp[0], narrow: sp[2], off: false, S: 0, dpr: 0, p: -1 };
   });
+  var rows = ROWS_BEFORE.map(function (sel) {
+    var before = document.querySelector(sel), row = document.createElement("div");
+    row.className = "mfig-row"; row.setAttribute("aria-hidden", "true");
+    return { el: row, before: before };
+  }).filter(function (r) { return r.before; });
+  var mode = null;
+  function setMode() { // move every figure into the margins, or into the rows between sections
+    var shown = figs.filter(function (f) { return f.narrow; });
+    var m = wide.matches || rows.length < shown.length ? "margin" : "inline";
+    if (m === mode) return;
+    mode = m;
+    if (m === "margin") rows.forEach(function (r) { if (r.el.parentNode) r.el.parentNode.removeChild(r.el); });
+    else rows.forEach(function (r) { r.before.parentNode.insertBefore(r.el, r.before); });
+    figs.forEach(function (f) {
+      f.fig.style.top = ""; f.p = -1; f.off = false;
+      if (m === "margin") { f.fig.className = "mfig " + f.side; page.appendChild(f.fig); return; }
+      if (f.fig.parentNode) f.fig.parentNode.removeChild(f.fig);
+      if (!f.narrow) { f.off = true; return; }
+      f.fig.className = "mfig inline";
+      rows[shown.indexOf(f)].el.appendChild(f.fig);
+    });
+  }
 
   function place() {
+    setMode();
+    if (mode === "inline") {
+      figs.forEach(function (f) { if (!f.off) f.docTop = f.fig.getBoundingClientRect().top + window.scrollY; });
+      return;
+    }
     var top = page.getBoundingClientRect().top, n = figs.length;
     var y0 = startEl.getBoundingClientRect().top - top;
     var yN = endEl.getBoundingClientRect().bottom - top - figs[n - 1].fig.offsetHeight;
@@ -684,9 +715,9 @@
     f.p = -1;
   }
   function render(force) {
-    if (!wide.matches) return;
     var vh = window.innerHeight;
     figs.forEach(function (f) {
+      if (f.off) return;
       var r = f.cv.getBoundingClientRect();
       if (r.bottom < -40 || r.top > vh + 40) return;
       fit(f);

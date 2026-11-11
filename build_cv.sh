@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the website's public cv.pdf from the Academic CV.
+# Build the website's public CV (cv-jacob-march.pdf) from the Academic CV.
 #
 # The private CV header carries a home address and phone number. This builds a
 # copy in a temp directory with that header line replaced by the department
@@ -56,5 +56,5 @@ if ! pdftotext cv.pdf - | grep -q "arXiv"; then
   exit 1
 fi
 
-cp cv.pdf "$HERE/cv.pdf"
-echo "wrote $HERE/cv.pdf"
+cp cv.pdf "$HERE/cv-jacob-march.pdf"
+echo "wrote $HERE/cv-jacob-march.pdf"
