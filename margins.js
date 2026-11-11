@@ -68,6 +68,12 @@
     var inside = (x - g.cx) * (x - g.cx) + (y - g.cy) * (y - g.cy) < g.r * g.r;
     return g.flip ? !inside : inside;
   }
+  // Signed Euclidean distance from (x, y) to the geodesic, positive on the t1 -> t2 side.
+  function arcSideDistance(g, x, y) {
+    if (g.line) return x * g.nx + y * g.ny;
+    var inside = g.r - Math.hypot(x - g.cx, y - g.cy);
+    return g.flip ? -inside : inside;
+  }
   function geodesicPath(ctx, g, X, Y, R) {
     var ax = X + R * Math.cos(g.t1), ay = Y + R * Math.sin(g.t1);
     var bx = X + R * Math.cos(g.t2), by = Y + R * Math.sin(g.t2);
@@ -208,6 +214,10 @@
   // of its entanglement wedge fill in, reaching the centre once it passes half the boundary.
   function Tiling() {
     var tiles = buildTiling(5, 4, 0.03, 1500), cache = null;
+    tiles.forEach(function (t) {
+      t.size = 0;
+      t.v.forEach(function (z) { t.size = Math.max(t.size, Math.hypot(z[0] - t.c[0], z[1] - t.c[1])); });
+    });
     function paths(S) {
       var X = S / 2, Y = S / 2, R = S / 2 - 2, all = new Path2D();
       var list = tiles.map(function (t) {
@@ -233,8 +243,10 @@
         var g = boundaryGeodesic(mid - span / 2, mid + span / 2);
         for (var i = 0; i < tiles.length; i++) {
           var tl = tiles[i];
-          if (onArcSide(g, tl.c[0], tl.c[1])) { ctx.fillStyle = col(C.accent, tl.par ? 0.38 : 0.22); ctx.fill(cache.list[i]); }
-          else if (!tl.par) { ctx.fillStyle = col(C.text, 0.05); ctx.fill(cache.list[i]); }
+          // fade each tile in as the geodesic sweeps across it, over about its own size
+          var w = smooth(0.5 + arcSideDistance(g, tl.c[0], tl.c[1]) / (0.7 * tl.size));
+          if (w < 1 && !tl.par) { ctx.fillStyle = col(C.text, 0.05 * (1 - w)); ctx.fill(cache.list[i]); }
+          if (w > 0) { ctx.fillStyle = col(C.accent, (tl.par ? 0.38 : 0.22) * w); ctx.fill(cache.list[i]); }
         }
         ctx.lineWidth = 0.45; ctx.strokeStyle = col(C.muted, 0.5); ctx.stroke(cache.all);
         ctx.beginPath(); ctx.arc(X, Y, R, 0, TAU); ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke();
@@ -335,7 +347,7 @@
     return {
       draw: function (ctx, S, p) {
         if (!cache || cache.S !== S) cache = paths(S);
-        var X = S / 2, Y = S / 2, R = S / 2 - 2, phase = 4 * p;
+        var X = S / 2, Y = S / 2, R = S / 2 - 2, phase = 2 * p;
         tris.forEach(function (tr) {
           var v = tr.amp * Math.cos(m * tr.phi - phase);
           ctx.fillStyle = v > 0 ? col(C.accent, 0.78 * v) : col(C.text, 0.4 * -v);
@@ -422,32 +434,37 @@
         var G = c.map(function (ci) { return boundaryGeodesic(ci - phi / 2, ci + phi / 2); });
         var H = c.map(function (ci, i) { return boundaryGeodesic(ci + phi / 2, c[(i + 1) % 3] - phi / 2 + (i === 2 ? TAU : 0)); });
         var K = c.map(function (ci, i) { return boundaryGeodesic(c[(i + 1) % 3] + phi / 2, ci - phi / 2 + TAU); });
-        var tri = g < phi, bi = Math.sin(g / 2) * Math.sin((2 * g + phi) / 2) < Math.pow(Math.sin(phi / 2), 2);
+        // The transitions are sharp; each is cross-faded over ~0.06 rad of phi.
+        var wT = smooth((phi - phi0) / 0.06 + 0.5), wB = smooth((phi - phi1) / 0.06 + 0.5);
         var disk = new Path2D(); disk.arc(X, Y, R, 0, TAU);
-        ctx.fillStyle = col(C.accent, 0.18);
-        if (tri) {
-          ctx.save(); ctx.clip(disk); H.forEach(function (h) { clipSide(ctx, h, X, Y, R, S, false); }); ctx.fill(disk); ctx.restore();
-        } else {
+        if (wT < 1) {
+          ctx.fillStyle = col(C.accent, 0.18 * (1 - wT));
           G.forEach(function (gg) { ctx.save(); ctx.clip(disk); clipSide(ctx, gg, X, Y, R, S, true); ctx.fill(disk); ctx.restore(); });
         }
-        if (bi) {
-          ctx.fillStyle = col(C.accent, 0.26);
+        if (wT > 0) {
+          ctx.fillStyle = col(C.accent, 0.18 * wT);
+          ctx.save(); ctx.clip(disk); H.forEach(function (h) { clipSide(ctx, h, X, Y, R, S, false); }); ctx.fill(disk); ctx.restore();
+        }
+        if (wB > 0) {
+          ctx.fillStyle = col(C.accent, 0.26 * wB);
           ctx.save(); ctx.clip(disk);
           H.forEach(function (h) { clipSide(ctx, h, X, Y, R, S, false); });
           K.forEach(function (k) { clipSide(ctx, k, X, Y, R, S, false); });
           ctx.fill(disk); ctx.restore();
         }
         ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke(disk);
-        ctx.lineWidth = 1; ctx.strokeStyle = col(C.text, 0.72);
-        ctx.beginPath();
-        G.forEach(function (gg) { geodesicPath(ctx, gg, X, Y, R); });
-        if (tri) H.forEach(function (h) { geodesicPath(ctx, h, X, Y, R); });
-        if (bi) K.forEach(function (k) { geodesicPath(ctx, k, X, Y, R); });
-        ctx.stroke();
+        ctx.lineWidth = 1;
+        [[G, 1], [H, wT], [K, wB]].forEach(function (set) {
+          if (set[1] <= 0) return;
+          ctx.strokeStyle = col(C.text, 0.72 * set[1]);
+          ctx.beginPath(); set[0].forEach(function (gg) { geodesicPath(ctx, gg, X, Y, R); }); ctx.stroke();
+        });
         ctx.lineWidth = 2.6; ctx.strokeStyle = col(C.accent);
         c.forEach(function (ci) { ctx.beginPath(); ctx.arc(X, Y, R, ci - phi / 2, ci + phi / 2); ctx.stroke(); });
-        ctx.lineWidth = 1.1; ctx.strokeStyle = col(C.text, 0.85); ctx.fillStyle = tri ? col(C.accent) : col(C.bg);
-        ctx.beginPath(); ctx.arc(X, Y, 3.2, 0, TAU); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(X, Y, 3.2, 0, TAU);
+        ctx.fillStyle = col(C.bg); ctx.fill();
+        ctx.fillStyle = col(C.accent, wT); ctx.fill();
+        ctx.lineWidth = 1.1; ctx.strokeStyle = col(C.text, 0.85); ctx.stroke();
       }
     };
   }
@@ -472,42 +489,71 @@
     return {
       draw: function (ctx, S, p) {
         var pad = 6, W = S - 2 * pad, top = 10, bot = S - 10, h = (bot - top) / L;
-        var ell = 2 + Math.round(12 * p), a = Math.floor((n0 - ell) / 2), b = a + ell - 1, cn = cone(a, b);
+        // The interval grows one site at a time; between sizes, whatever joins the
+        // causal cone fades in, so the cone fills smoothly as you scroll.
+        var ellF = 2 + 12 * p, l0 = Math.min(13, Math.floor(ellF)), fr = smooth((ellF - l0 - 0.2) / 0.6);
+        function iv(ell) { var a = Math.floor((n0 - ell) / 2); return [a, a + ell - 1]; }
+        var I0 = iv(l0), I1 = iv(l0 + 1), c0 = cone(I0[0], I0[1]), c1 = cone(I1[0], I1[1]);
+        function wt(test) { return test(c0) ? 1 : test(c1) ? fr : 0; }
         function x(t, j) { var n = n0 >> t; return pad + W * (j + 0.5) / n; }
         function y(t) { return bot - t * h; }
         var yD = function (t) { return y(t) - h * 0.3; }, yI = function (t) { return y(t) - h * 0.68; };
+        function leg(w, draw) {
+          ctx.strokeStyle = col(C.muted, 0.45 * (1 - w)); ctx.lineWidth = 0.7; draw();
+          if (w > 0) { ctx.strokeStyle = col(C.accent, 0.9 * w); ctx.lineWidth = 1.1; draw(); }
+        }
+        function tensor(w, path) {
+          ctx.fillStyle = col(C.bg); ctx.fill(path);
+          ctx.strokeStyle = col(C.muted, 0.8); ctx.lineWidth = 0.8; ctx.stroke(path);
+          if (w > 0) { ctx.fillStyle = col(C.accent, w); ctx.fill(path); ctx.strokeStyle = col(C.accent, w); ctx.stroke(path); }
+        }
+        // Geometry: in layer t, disentangler squares sit on site pairs (s, s+1) with
+        // s odd, isometry triangles on pairs (2j, 2j+1). Every leg runs between
+        // tensor corners: site -> square bottom corner, square top corner ->
+        // triangle base corner (or site -> triangle directly at the two ends),
+        // triangle apex -> the next layer's site.
         for (var t = 0; t < L; t++) {
-          var n = n0 >> t;
-          for (var s = 0; s < n; s++) {
-            var hasD = s >= 1 && s <= n - 2, d0 = s % 2 === 1 ? s : s - 1;
-            var inCone = s >= cn[t].lo && s <= cn[t].hi;
-            ctx.strokeStyle = inCone ? col(C.accent, 0.9) : col(C.muted, 0.45); ctx.lineWidth = inCone ? 1.1 : 0.7;
-            ctx.beginPath(); ctx.moveTo(x(t, s), y(t));
-            var xi = (x(t, 2 * Math.floor(s / 2)) + x(t, 2 * Math.floor(s / 2) + 1)) / 2;
-            if (hasD) { var xd = (x(t, d0) + x(t, d0 + 1)) / 2; ctx.lineTo(x(t, s) + (xd - x(t, s)) * 0.35, yD(t)); }
-            ctx.lineTo(xi, yI(t));
-            ctx.stroke();
-          }
-          for (var j = 0; j < n / 2; j++) {
-            var xi2 = x(t + 1, j), ic = j >= cn[t + 1].a && j <= cn[t + 1].b;
-            ctx.strokeStyle = ic ? col(C.accent, 0.9) : col(C.muted, 0.45); ctx.lineWidth = ic ? 1.1 : 0.7;
-            ctx.beginPath(); ctx.moveTo(xi2, yI(t)); ctx.lineTo(xi2, y(t + 1)); ctx.stroke();
-          }
+          var n = n0 >> t, sz = Math.min(5, W / n * 0.7), tw = Math.min(7, W / n * 1.1), th = tw * 0.8;
+          var dis = function (s) { return (x(t, s) + x(t, s + 1)) / 2; };   // square centre, s odd
+          var iso = function (j) { return x(t + 1, j); };                     // triangle centre
+          var base = function (s) { var j = Math.floor(s / 2); return [iso(j) + (s % 2 ? tw / 2 : -tw / 2), yI(t) + th / 2]; };
+          for (var s = 0; s < n; s++) (function (t, s) {
+            var hasD = s >= 1 && s <= n - 2, d0 = s % 2 === 1 ? s : s - 1, B = base(s);
+            if (hasD) {
+              var xd = dis(d0), side = s === d0 ? -1 : 1;
+              var bot = [xd + side * sz / 2, yD(t) + sz / 2], topc = [xd + side * sz / 2, yD(t) - sz / 2];
+              leg(wt(function (cn) { return s >= cn[t].a && s <= cn[t].b; }), function () {
+                ctx.beginPath(); ctx.moveTo(x(t, s), y(t)); ctx.lineTo(bot[0], bot[1]); ctx.stroke();
+              });
+              leg(wt(function (cn) { return s >= cn[t].lo && s <= cn[t].hi; }), function () {
+                ctx.beginPath(); ctx.moveTo(topc[0], topc[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+              });
+            } else {
+              leg(wt(function (cn) { return s >= cn[t].lo && s <= cn[t].hi; }), function () {
+                ctx.beginPath(); ctx.moveTo(x(t, s), y(t)); ctx.lineTo(B[0], B[1]); ctx.stroke();
+              });
+            }
+          })(t, s);
+          for (var j = 0; j < n / 2; j++) (function (t, j) {
+            var xi2 = iso(j);
+            leg(wt(function (cn) { return j >= cn[t + 1].a && j <= cn[t + 1].b; }), function () {
+              ctx.beginPath(); ctx.moveTo(xi2, yI(t) - th / 2); ctx.lineTo(xi2, y(t + 1)); ctx.stroke();
+            });
+          })(t, j);
           for (s = 1; s + 1 <= n - 2; s += 2) {
-            var xd2 = (x(t, s) + x(t, s + 1)) / 2, dc = s + 1 >= cn[t].a && s <= cn[t].b, sz = Math.min(5, W / n * 0.7);
-            ctx.fillStyle = dc ? col(C.accent) : col(C.bg); ctx.strokeStyle = dc ? col(C.accent) : col(C.muted, 0.8); ctx.lineWidth = 0.8;
-            ctx.fillRect(xd2 - sz / 2, yD(t) - sz / 2, sz, sz); ctx.strokeRect(xd2 - sz / 2, yD(t) - sz / 2, sz, sz);
+            var sq = new Path2D(); sq.rect(dis(s) - sz / 2, yD(t) - sz / 2, sz, sz);
+            tensor(wt(function (cn) { return s + 1 >= cn[t].a && s <= cn[t].b; }), sq);
           }
           for (j = 0; j < n / 2; j++) {
-            var xc = x(t + 1, j), ic2 = j >= cn[t + 1].a && j <= cn[t + 1].b, tw = Math.min(7, W / n * 1.1), th = tw * 0.8;
-            ctx.beginPath(); ctx.moveTo(xc - tw / 2, yI(t) + th / 2); ctx.lineTo(xc + tw / 2, yI(t) + th / 2); ctx.lineTo(xc, yI(t) - th / 2); ctx.closePath();
-            ctx.fillStyle = ic2 ? col(C.accent) : col(C.bg); ctx.fill();
-            ctx.strokeStyle = ic2 ? col(C.accent) : col(C.muted, 0.8); ctx.lineWidth = 0.8; ctx.stroke();
+            var xc = iso(j), tri = new Path2D();
+            tri.moveTo(xc - tw / 2, yI(t) + th / 2); tri.lineTo(xc + tw / 2, yI(t) + th / 2); tri.lineTo(xc, yI(t) - th / 2); tri.closePath();
+            tensor(wt(function (cn) { return j >= cn[t + 1].a && j <= cn[t + 1].b; }), tri);
           }
         }
-        ctx.beginPath(); ctx.arc(x(L, 0), y(L) - 3, 3.2, 0, TAU); ctx.fillStyle = col(C.muted, 0.7); ctx.fill();
+        ctx.beginPath(); ctx.arc(x(L, 0), y(L), 3.2, 0, TAU); ctx.fillStyle = col(C.muted, 0.7); ctx.fill();
+        var xa = x(0, I0[0]) + (x(0, I1[0]) - x(0, I0[0])) * fr, xb = x(0, I0[1]) + (x(0, I1[1]) - x(0, I0[1])) * fr;
         ctx.lineWidth = 2.6; ctx.strokeStyle = col(C.accent); ctx.lineCap = "round";
-        ctx.beginPath(); ctx.moveTo(x(0, a) - 2, bot + 4); ctx.lineTo(x(0, b) + 2, bot + 4); ctx.stroke(); ctx.lineCap = "butt";
+        ctx.beginPath(); ctx.moveTo(xa - 2, bot + 4); ctx.lineTo(xb + 2, bot + 4); ctx.stroke(); ctx.lineCap = "butt";
         ctx.fillStyle = col(C.text, 0.75);
         for (s = 0; s < n0; s++) { ctx.beginPath(); ctx.arc(x(0, s), bot, 1.3, 0, TAU); ctx.fill(); }
       }
