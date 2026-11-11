@@ -7,6 +7,7 @@ under a custom domain (once set up, see below).
 |---|---|
 | `index.html` | the whole site; edit by hand, except the publication block |
 | `style.css` | styling; colour tokens at the top, dark mode included |
+| `margins.js` | small scroll-driven gravity and entanglement figures in the side margins (screens ≥ 980px wide); the figures are listed at the top of the file |
 | `update_pubs.py` | rewrites the publication block in `index.html` from INSPIRE-HEP |
 | `build_cv.sh` | builds the public `cv.pdf` from the Academic CV |
 | `cv.pdf` | **generated** by `build_cv.sh`; do not replace it with the private CV |

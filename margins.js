@@ -1,0 +1,525 @@
+/* Margin figures: small gravity and entanglement diagrams that sit in the page
+   margins beside the text and scroll with it. Each figure's "time" is set by
+   scroll position (0 when it enters at the bottom of the screen, or at the top
+   of the page; 1 when it leaves at the top, or at the end of the page), so
+   reading down the page plays it forward.
+   Screens at least 980px wide only (the margins need room).
+
+   Figures, top to bottom
+     right  Penrose diagram of the eternal AdS black hole; the ER bridge grows
+     left   {5,4} tiling; a boundary interval grows and its entanglement wedge fills in
+     right  two intervals; RT phase transition, then E_W of the connected wedge
+     left   Page curve of an evaporating black hole
+     right  corotating m = 2 mode on a finite-element mesh around a rotating black hole
+     left   light bending around a Schwarzschild black hole
+     right  relativistic perihelion precession                                    */
+(function () {
+  "use strict";
+  if (!window.matchMedia || !window.Path2D) return;
+
+  var TAU = Math.PI * 2;
+  var wide = window.matchMedia("(min-width: 980px)");
+  var HOLE = "rgb(8,10,9)";
+
+  /* ------------------------------------------------------------ utilities */
+  var C = {};
+  function readColors() {
+    var cs = getComputedStyle(document.documentElement);
+    ["accent", "muted", "text"].forEach(function (k) {
+      var h = cs.getPropertyValue("--" + k).trim().replace("#", "");
+      if (h.length === 3) h = h.replace(/./g, "$&$&");
+      var n = parseInt(h, 16);
+      C[k] = [n >> 16 & 255, n >> 8 & 255, n & 255];
+    });
+  }
+  function col(c, a) { return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + (a == null ? 1 : a) + ")"; }
+  function wrapPi(a) { while (a > Math.PI) a -= TAU; while (a < -Math.PI) a += TAU; return a; }
+  function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+  function polyline(ctx, pts, n) {
+    n = n == null ? pts.length : n;
+    if (n < 2) return;
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < n; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.stroke();
+  }
+  // RK4 for the orbit equation u'' = f(u) in the angle phi; state [u, du/dphi].
+  function rk4(s, h, f) {
+    function d(x) { return [x[1], f(x[0])]; }
+    var k1 = d(s), k2 = d([s[0] + h / 2 * k1[0], s[1] + h / 2 * k1[1]]);
+    var k3 = d([s[0] + h / 2 * k2[0], s[1] + h / 2 * k2[1]]), k4 = d([s[0] + h * k3[0], s[1] + h * k3[1]]);
+    return [s[0] + h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]), s[1] + h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1])];
+  }
+
+  /* -------------------------------------------- Poincaré disk geometry */
+  // Geodesic ending on boundary angles t1 -> t2 (increasing canvas angle):
+  // a circle around the shorter arc, or a line through the origin.
+  // flip = the t1 -> t2 arc is the longer one.
+  function boundaryGeodesic(t1, t2) {
+    var d = ((t2 - t1) % TAU + TAU) % TAU, mid = t1 + d / 2, flip = d > Math.PI;
+    var h = flip ? TAU - d : d, m = flip ? mid + Math.PI : mid, r = Math.tan(h / 2);
+    if (!(r < 60)) return { line: true, nx: Math.cos(mid), ny: Math.sin(mid), t1: t1, t2: t2 };
+    var dist = 1 / Math.cos(h / 2);
+    return { cx: dist * Math.cos(m), cy: dist * Math.sin(m), r: r, flip: flip, t1: t1, t2: t2 };
+  }
+  function onArcSide(g, x, y) {
+    if (g.line) return x * g.nx + y * g.ny > 0;
+    var inside = (x - g.cx) * (x - g.cx) + (y - g.cy) * (y - g.cy) < g.r * g.r;
+    return g.flip ? !inside : inside;
+  }
+  function geodesicPath(ctx, g, X, Y, R) {
+    var ax = X + R * Math.cos(g.t1), ay = Y + R * Math.sin(g.t1);
+    var bx = X + R * Math.cos(g.t2), by = Y + R * Math.sin(g.t2);
+    ctx.moveTo(ax, ay);
+    if (g.line) { ctx.lineTo(bx, by); return; }
+    var cx = X + R * g.cx, cy = Y + R * g.cy;
+    var a1 = Math.atan2(ay - cy, ax - cx), d = wrapPi(Math.atan2(by - cy, bx - cx) - a1);
+    ctx.arc(cx, cy, R * g.r, a1, a1 + d, d < 0);
+  }
+  // Clip to the region on (onSide) or off the t1 -> t2 side of g.
+  function clipSide(ctx, g, X, Y, R, S, onSide) {
+    var p = new Path2D();
+    if (g.line) {
+      var s = onSide ? 1 : -1, nx = g.nx * s, ny = g.ny * s, big = 4 * S;
+      p.moveTo(X - ny * big, Y + nx * big);
+      p.lineTo(X - ny * big + nx * big, Y + nx * big + ny * big);
+      p.lineTo(X + ny * big + nx * big, Y - nx * big + ny * big);
+      p.lineTo(X + ny * big, Y - nx * big);
+      p.closePath();
+      ctx.clip(p);
+      return;
+    }
+    p.arc(X + R * g.cx, Y + R * g.cy, R * g.r, 0, TAU);
+    if (onSide !== g.flip) { ctx.clip(p); return; }
+    p.rect(-S, -S, 3 * S, 3 * S);
+    ctx.clip(p, "evenodd");
+  }
+  function geodesicThrough(a, b) {
+    var cr = a[0] * b[1] - a[1] * b[0];
+    if (Math.abs(cr) < 1e-10) {
+      var dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy);
+      return { line: true, nx: -dy / l, ny: dx / l };
+    }
+    var s = a[0] * a[0] + a[1] * a[1], c = [a[0] / s, a[1] / s];
+    var d = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
+    var b2 = b[0] * b[0] + b[1] * b[1], c2 = c[0] * c[0] + c[1] * c[1];
+    var ux = (s * (b[1] - c[1]) + b2 * (c[1] - a[1]) + c2 * (a[1] - b[1])) / d;
+    var uy = (s * (c[0] - b[0]) + b2 * (a[0] - c[0]) + c2 * (b[0] - a[0])) / d;
+    return { cx: ux, cy: uy, r: Math.hypot(a[0] - ux, a[1] - uy) };
+  }
+  function reflect(z, g) {
+    if (g.line) {
+      var d = z[0] * g.nx + z[1] * g.ny;
+      return [z[0] - 2 * d * g.nx, z[1] - 2 * d * g.ny];
+    }
+    var dx = z[0] - g.cx, dy = z[1] - g.cy, k = g.r * g.r / (dx * dx + dy * dy);
+    return [g.cx + k * dx, g.cy + k * dy];
+  }
+  // Regular {p,q} tiling by repeated reflection of the central p-gon in its edges.
+  function buildTiling(p, q, minSize, maxTiles) {
+    var rv = Math.sqrt(Math.cos(Math.PI / p + Math.PI / q) / Math.cos(Math.PI / p - Math.PI / q));
+    var v0 = [];
+    for (var k = 0; k < p; k++) {
+      var a = -Math.PI / 2 + TAU * (k + 0.5) / p;
+      v0.push([rv * Math.cos(a), rv * Math.sin(a)]);
+    }
+    function centroid(v) {
+      var x = 0, y = 0;
+      for (var i = 0; i < v.length; i++) { x += v[i][0]; y += v[i][1]; }
+      return [x / v.length, y / v.length];
+    }
+    function keyOf(c) { return Math.round(c[0] * 4000) + "," + Math.round(c[1] * 4000); }
+    function extent(v) {
+      var m = 0;
+      for (var i = 1; i < v.length; i++) m = Math.max(m, Math.hypot(v[i][0] - v[0][0], v[i][1] - v[0][1]));
+      return m;
+    }
+    var first = { v: v0, c: centroid(v0), par: 0 }, tiles = [first], seen = {}, queue = [first];
+    seen[keyOf(first.c)] = 1;
+    while (queue.length && tiles.length < maxTiles) {
+      var t = queue.shift();
+      for (var e = 0; e < p; e++) {
+        var g = geodesicThrough(t.v[e], t.v[(e + 1) % p]);
+        var nv = t.v.map(function (z) { return reflect(z, g); });
+        var c = centroid(nv), key = keyOf(c);
+        if (seen[key]) continue;
+        seen[key] = 1;
+        if (extent(nv) < minSize) continue;
+        var nt = { v: nv, c: c, par: 1 - t.par };
+        tiles.push(nt);
+        queue.push(nt);
+      }
+    }
+    return tiles;
+  }
+
+  /* ================================================================ figures
+     Each figure is { draw(ctx, S, p) } with S the canvas size in CSS px and
+     p in [0, 1] the scroll-driven time.                                      */
+
+  // Two-sided AdS black hole. Slices anchored at t_L = t_R = t move up the
+  // diagram; their interior part grows and hugs the final slice.
+  function Penrose() {
+    return {
+      draw: function (ctx, S, p) {
+        var m = 5, W = S - 2 * m;
+        function px(x) { return m + (x + 1) / 2 * W; }
+        function py(y) { return m + (1 - y) / 2 * W; }
+        ctx.lineWidth = 0.8; ctx.setLineDash([2, 3]); ctx.strokeStyle = col(C.muted, 0.8);
+        ctx.beginPath();
+        ctx.moveTo(px(-1), py(-1)); ctx.lineTo(px(1), py(1));
+        ctx.moveTo(px(-1), py(1)); ctx.lineTo(px(1), py(-1));
+        ctx.stroke(); ctx.setLineDash([]);
+        ctx.lineWidth = 1.2; ctx.strokeStyle = col(C.text, 0.7);
+        ctx.beginPath();
+        ctx.moveTo(px(-1), py(-1)); ctx.lineTo(px(-1), py(1));
+        ctx.moveTo(px(1), py(-1)); ctx.lineTo(px(1), py(1));
+        ctx.stroke();
+        ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.text, 0.55);
+        [1, -1].forEach(function (yy) {
+          ctx.beginPath();
+          for (var k = 0; k <= 14; k++) {
+            var x = px(-1 + 2 * k / 14), y = py(yy) + (k % 2 ? 1.4 : -1.4);
+            if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+          }
+          ctx.stroke();
+        });
+        var tau = -2.8 + 5.6 * p;
+        for (var k = 5; k >= 0; k--) {
+          var tk = tau - k * 0.42;
+          if (tk < -3.2) continue;
+          var h = 0.97 * Math.tanh(0.6 * tk), ym = 0.62 * Math.tanh(0.6 * tk);
+          ctx.beginPath();
+          ctx.moveTo(px(-1), py(h));
+          ctx.quadraticCurveTo(px(0), py(2 * ym - h), px(1), py(h));
+          ctx.lineWidth = k ? 0.8 : 1.6;
+          ctx.strokeStyle = col(C.accent, k ? 0.4 * (1 - k / 6) : 1);
+          ctx.stroke();
+        }
+        h = 0.97 * Math.tanh(0.6 * tau);
+        ctx.fillStyle = col(C.accent);
+        ctx.beginPath(); ctx.arc(px(-1), py(h), 2, 0, TAU); ctx.arc(px(1), py(h), 2, 0, TAU); ctx.fill();
+      }
+    };
+  }
+
+  // {5,4} tiling (the HaPPY-code tiling). A boundary interval grows; the tiles
+  // of its entanglement wedge fill in, reaching the centre once it passes half the boundary.
+  function Tiling() {
+    var tiles = buildTiling(5, 4, 0.03, 1500), cache = null;
+    function paths(S) {
+      var X = S / 2, Y = S / 2, R = S / 2 - 2, all = new Path2D();
+      var list = tiles.map(function (t) {
+        var pa = new Path2D(), v = t.v, n = v.length;
+        pa.moveTo(X + R * v[0][0], Y + R * v[0][1]);
+        for (var e = 0; e < n; e++) {
+          var a = v[e], b = v[(e + 1) % n], g = geodesicThrough(a, b);
+          if (g.line || g.r > 50) { pa.lineTo(X + R * b[0], Y + R * b[1]); continue; }
+          var a1 = Math.atan2(a[1] - g.cy, a[0] - g.cx), d = wrapPi(Math.atan2(b[1] - g.cy, b[0] - g.cx) - a1);
+          pa.arc(X + R * g.cx, Y + R * g.cy, R * g.r, a1, a1 + d, d < 0);
+        }
+        pa.closePath();
+        all.addPath(pa);
+        return pa;
+      });
+      return { S: S, all: all, list: list };
+    }
+    return {
+      draw: function (ctx, S, p) {
+        if (!cache || cache.S !== S) cache = paths(S);
+        var X = S / 2, Y = S / 2, R = S / 2 - 2;
+        var mid = -Math.PI / 2 + 0.5 * p, span = Math.PI * (0.18 + 1.5 * p);
+        var g = boundaryGeodesic(mid - span / 2, mid + span / 2);
+        for (var i = 0; i < tiles.length; i++) {
+          var tl = tiles[i];
+          if (onArcSide(g, tl.c[0], tl.c[1])) { ctx.fillStyle = col(C.accent, tl.par ? 0.38 : 0.22); ctx.fill(cache.list[i]); }
+          else if (!tl.par) { ctx.fillStyle = col(C.text, 0.05); ctx.fill(cache.list[i]); }
+        }
+        ctx.lineWidth = 0.45; ctx.strokeStyle = col(C.muted, 0.5); ctx.stroke(cache.all);
+        ctx.beginPath(); ctx.arc(X, Y, R, 0, TAU); ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke();
+        ctx.beginPath(); ctx.arc(X, Y, R, g.t1, g.t2); ctx.lineWidth = 2.4; ctx.strokeStyle = col(C.accent); ctx.stroke();
+        ctx.beginPath(); geodesicPath(ctx, g, X, Y, R); ctx.lineWidth = 1.3; ctx.stroke();
+      }
+    };
+  }
+
+  // Two intervals A, B growing at fixed separation. The RT surface switches from
+  // disconnected to connected; then the wedge of AB is connected and its
+  // cross-section E_W (by symmetry, a segment of the diameter) appears.
+  function TwoIntervals() {
+    function crossing(span) { // signed position on the symmetry axis where the bottom-gap geodesic crosses it
+      var h = span > Math.PI ? TAU - span : span, c = Math.cos(h / 2);
+      var s = Math.abs(c) < 1e-6 ? 0 : (1 - Math.sin(h / 2)) / c;
+      return span > Math.PI ? s : -s;
+    }
+    return {
+      draw: function (ctx, S, p) {
+        var X = S / 2, Y = S / 2, R = S / 2 - 3, top = -Math.PI / 2, g = 0.55;
+        var a = 0.3 + 1.3 * p, gb = TAU - 2 * a - g;
+        var A1 = top - g / 2 - a, A2 = top - g / 2, B1 = top + g / 2, B2 = top + g / 2 + a;
+        var connected = Math.pow(Math.sin(a / 2), 2) > Math.sin(g / 2) * Math.sin(gb / 2);
+        var disk = new Path2D(); disk.arc(X, Y, R, 0, TAU);
+        var geos;
+        ctx.fillStyle = col(C.accent, 0.22);
+        if (connected) {
+          geos = [boundaryGeodesic(A2, B1), boundaryGeodesic(B2, A1 + TAU)];
+          ctx.save(); ctx.clip(disk);
+          clipSide(ctx, geos[0], X, Y, R, S, false);
+          clipSide(ctx, geos[1], X, Y, R, S, false);
+          ctx.fill(disk); ctx.restore();
+        } else {
+          geos = [boundaryGeodesic(A1, A2), boundaryGeodesic(B1, B2)];
+          geos.forEach(function (gg) { ctx.save(); ctx.clip(disk); clipSide(ctx, gg, X, Y, R, S, true); ctx.fill(disk); ctx.restore(); });
+        }
+        ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke(disk);
+        ctx.lineWidth = 1.3; ctx.strokeStyle = col(C.accent);
+        ctx.beginPath(); geos.forEach(function (gg) { geodesicPath(ctx, gg, X, Y, R); }); ctx.stroke();
+        ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.arc(X, Y, R, A1, A2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(X, Y, R, B1, B2); ctx.stroke();
+        if (connected) {
+          var s1 = -crossing(g), s2 = crossing(gb);
+          ctx.lineWidth = 1.5; ctx.strokeStyle = col(C.text, 0.85);
+          ctx.beginPath(); ctx.moveTo(X, Y - R * s1); ctx.lineTo(X, Y - R * s2); ctx.stroke();
+        }
+      }
+    };
+  }
+
+  // Page curve. Hawking's radiation entropy keeps rising (dashed); the black
+  // hole's Bekenstein-Hawking entropy falls as it evaporates (M^3 ~ t_evap - t);
+  // the fine-grained entropy follows the smaller of the two.
+  function PageCurve() {
+    var k = 1.4;
+    function sbh(t) { return Math.pow(Math.max(0, 1 - t), 2 / 3); }
+    function shaw(t) { return k * (1 - sbh(t)); }
+    function curve(f, t0, t1, X, Y) {
+      var pts = [];
+      for (var i = 0; i <= 80; i++) { var t = t0 + (t1 - t0) * i / 80; pts.push([X(t), Y(f(t))]); }
+      return pts;
+    }
+    return {
+      draw: function (ctx, S, p) {
+        var l = 7, r = S - 5, b = S - 7, tp = 6, ymax = 1.45;
+        function X(t) { return l + (r - l) * t; }
+        function Y(s) { return b - (b - tp) * s / ymax; }
+        ctx.lineWidth = 0.9; ctx.strokeStyle = col(C.muted, 0.9);
+        ctx.beginPath(); ctx.moveTo(l, tp); ctx.lineTo(l, b); ctx.lineTo(r, b); ctx.stroke();
+        ctx.lineWidth = 1; ctx.strokeStyle = col(C.muted, 0.75);
+        polyline(ctx, curve(sbh, 0, 1, X, Y));
+        ctx.setLineDash([2, 2]); polyline(ctx, curve(shaw, 0, 1, X, Y)); ctx.setLineDash([]);
+        var tn = 0.015 + 0.975 * p;
+        ctx.lineWidth = 1.8; ctx.strokeStyle = col(C.accent);
+        var pc = curve(function (t) { return Math.min(sbh(t), shaw(t)); }, 0, tn, X, Y);
+        polyline(ctx, pc);
+        var end = pc[pc.length - 1];
+        ctx.fillStyle = col(C.accent); ctx.beginPath(); ctx.arc(end[0], end[1], 2.3, 0, TAU); ctx.fill();
+        var rad = 8 * Math.pow(Math.max(0, 1 - tn), 1 / 3);
+        if (rad > 0.4) {
+          ctx.beginPath(); ctx.arc(X(0.3), Y(1.24), rad, 0, TAU);
+          ctx.fillStyle = HOLE; ctx.fill();
+          ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.9); ctx.stroke();
+        }
+      }
+    };
+  }
+
+  // Finite-element mesh outside a rotating black hole with a corotating m = 2
+  // mode, Re psi = R(r) cos(m phi - omega t); scrolling advances the phase.
+  function BlackHoleMode() {
+    var rh = 0.28, re = 0.38, Nr = 6, Nt = 28, m = 2, nodes = [], tris = [], cache = null;
+    for (var i = 0; i <= Nr; i++) {
+      var r = rh + (1 - rh) * Math.pow(i / Nr, 1.25), off = (i % 2) * 0.5;
+      for (var j = 0; j < Nt; j++) { var th = TAU * (j + off) / Nt; nodes.push([r * Math.cos(th), r * Math.sin(th)]); }
+    }
+    function id(a, b) { return a * Nt + ((b % Nt) + Nt) % Nt; }
+    for (i = 0; i < Nr; i++) for (j = 0; j < Nt; j++) {
+      var q = i % 2 === 0
+        ? [[id(i, j), id(i, j + 1), id(i + 1, j)], [id(i, j + 1), id(i + 1, j + 1), id(i + 1, j)]]
+        : [[id(i, j), id(i, j + 1), id(i + 1, j + 1)], [id(i, j), id(i + 1, j + 1), id(i + 1, j)]];
+      q.forEach(function (tri) {
+        var cx = 0, cy = 0;
+        tri.forEach(function (n) { cx += nodes[n][0] / 3; cy += nodes[n][1] / 3; });
+        var x = (Math.hypot(cx, cy) - rh) / (1 - rh);
+        tris.push({ v: tri, phi: Math.atan2(cy, cx), amp: Math.sin(Math.PI * x) * Math.exp(-1.4 * x) / 0.547 });
+      });
+    }
+    function paths(S) {
+      var X = S / 2, Y = S / 2, R = S / 2 - 2, mesh = new Path2D();
+      tris.forEach(function (tr) {
+        var pa = new Path2D();
+        tr.v.forEach(function (n, k) { var x = X + R * nodes[n][0], y = Y + R * nodes[n][1]; if (k) pa.lineTo(x, y); else pa.moveTo(x, y); });
+        pa.closePath(); tr.p = pa; mesh.addPath(pa);
+      });
+      return { S: S, mesh: mesh };
+    }
+    return {
+      draw: function (ctx, S, p) {
+        if (!cache || cache.S !== S) cache = paths(S);
+        var X = S / 2, Y = S / 2, R = S / 2 - 2, phase = 10 * p;
+        tris.forEach(function (tr) {
+          var v = tr.amp * Math.cos(m * tr.phi - phase);
+          ctx.fillStyle = v > 0 ? col(C.accent, 0.78 * v) : col(C.text, 0.4 * -v);
+          ctx.fill(tr.p);
+        });
+        ctx.lineWidth = 0.4; ctx.strokeStyle = col(C.muted, 0.45); ctx.stroke(cache.mesh);
+        ctx.beginPath(); ctx.arc(X, Y, R, 0, TAU); ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.85); ctx.stroke();
+        ctx.setLineDash([1.5, 2.5]);
+        ctx.beginPath(); ctx.arc(X, Y, R * re, 0, TAU); ctx.strokeStyle = col(C.text, 0.55); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.arc(X, Y, R * rh, 0, TAU); ctx.fillStyle = HOLE; ctx.fill();
+        ctx.strokeStyle = col(C.muted, 0.9); ctx.stroke();
+      }
+    };
+  }
+
+  // Null geodesics of Schwarzschild (G = c = M = 1): u'' = 3u^2 - u with u = 1/r.
+  // Rays with impact parameter below 3*sqrt(3) are captured; the rest are bent.
+  function Lensing() {
+    var view = 12, rays = [];
+    function trace(b) {
+      var u0 = 1 / 40, phi = Math.PI - Math.asin(b * u0), st = [u0, Math.cos(phi) / b];
+      var h = -0.0025, pts = [], s = 0, prev = null, peri = false;
+      for (var n = 0; n < 40000; n++) {
+        var x = Math.cos(phi) / st[0], y = -Math.sin(phi) / st[0];
+        if (prev) s += Math.hypot(x - prev[0], y - prev[1]);
+        pts.push([x, y, s]); prev = [x, y];
+        if (st[0] >= 0.5) break;
+        if (st[1] * h < 0) peri = true;                 // u now decreasing: past closest approach
+        if (peri && st[0] < u0) break;
+        st = rk4(st, h, function (u) { return 3 * u * u - u; });
+        phi += h;
+      }
+      return pts;
+    }
+    [3.8, 5.3, 6.2, 7.8, 10.2].forEach(function (b) {
+      var pts = trace(b);
+      rays.push(pts);
+      rays.push(pts.map(function (q) { return [q[0], -q[1], q[2]]; }));
+    });
+    return {
+      draw: function (ctx, S, p) {
+        var X = S / 2, Y = S / 2, sc = (S / 2) / view, front = 27 + 48 * p;
+        ctx.setLineDash([1.5, 2.5]); ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.9);
+        ctx.beginPath(); ctx.arc(X, Y, 3 * sc, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+        ctx.lineWidth = 1; ctx.strokeStyle = col(C.accent, 0.85); ctx.fillStyle = col(C.accent);
+        rays.forEach(function (pts) {
+          var n = 0;
+          while (n < pts.length && pts[n][2] <= front) n++;
+          if (n < 2) return;
+          ctx.beginPath(); ctx.moveTo(X + sc * pts[0][0], Y + sc * pts[0][1]);
+          for (var i = 1; i < n; i++) ctx.lineTo(X + sc * pts[i][0], Y + sc * pts[i][1]);
+          ctx.stroke();
+          if (n < pts.length) { ctx.beginPath(); ctx.arc(X + sc * pts[n - 1][0], Y + sc * pts[n - 1][1], 1.3, 0, TAU); ctx.fill(); }
+        });
+        ctx.beginPath(); ctx.arc(X, Y, 2 * sc, 0, TAU); ctx.fillStyle = HOLE; ctx.fill();
+      }
+    };
+  }
+
+  // Bound timelike geodesic of Schwarzschild: u'' = 1/L^2 + 3u^2 - u, with
+  // L^2 = p^2 / (p - 3 - e^2) for semi-latus rectum p = 12 and eccentricity e = 0.5,
+  // so r runs between p/(1+e) = 8 and p/(1-e) = 24 and the orbit precesses ~150 degrees per turn.
+  // The dashed ellipse is the Newtonian orbit with the same p and e.
+  function Precession() {
+    var P = 12, e = 0.5, iL2 = (P - 3 - e * e) / (P * P), view = 25, pts = [], st = [(1 + e) / P, 0], h = 0.004;
+    for (var phi = 0; phi < TAU * 3.3; phi += h) {
+      pts.push([Math.cos(phi) / st[0], -Math.sin(phi) / st[0]]);
+      st = rk4(st, h, function (u) { return iL2 + 3 * u * u - u; });
+    }
+    var kepler = [];
+    for (var a = 0; a <= TAU + 0.01; a += 0.02) { var r = P / (1 + e * Math.cos(a)); kepler.push([r * Math.cos(a), -r * Math.sin(a)]); }
+    return {
+      draw: function (ctx, S, p) {
+        var X = S / 2, Y = S / 2, sc = (S / 2 - 3) / view;
+        function map(q) { return [X + sc * q[0], Y + sc * q[1]]; }
+        ctx.setLineDash([1.5, 2.5]); ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.8);
+        polyline(ctx, kepler.map(map)); ctx.setLineDash([]);
+        var n = Math.max(2, Math.round(pts.length * (0.04 + 0.96 * p)));
+        ctx.lineWidth = 1.1; ctx.strokeStyle = col(C.accent, 0.8);
+        polyline(ctx, pts.map(map), n);
+        var end = map(pts[n - 1]);
+        ctx.fillStyle = col(C.accent); ctx.beginPath(); ctx.arc(end[0], end[1], 2.4, 0, TAU); ctx.fill();
+        ctx.fillStyle = HOLE; ctx.beginPath(); ctx.arc(X, Y, 3, 0, TAU); ctx.fill();
+      }
+    };
+  }
+
+  /* =============================================================== driver */
+  var page = document.querySelector(".page");
+  if (!page) return;
+  // [anchor element, vertical offset, side, figure]; the first sits just below the Research heading.
+  var specs = [
+    ["#research > p", 0, "right", Penrose],
+    ["#research > p:last-of-type", 0, "left", Tiling],
+    ["#papers", 0, "right", TwoIntervals],
+    ["#papers .pubs li:nth-child(2)", 0, "left", PageCurve],
+    ["#papers .pubs li:nth-child(4)", 0, "right", BlackHoleMode],
+    ["#teaching", 0, "left", Lensing],
+    ["#background", 10, "right", Precession]
+  ];
+  var figs = specs.map(function (sp) {
+    var anchor = document.querySelector(sp[0]);
+    if (!anchor) return null;
+    var fig = document.createElement("div"), cv = document.createElement("canvas");
+    fig.className = "mfig " + sp[2];
+    fig.setAttribute("aria-hidden", "true");
+    fig.appendChild(cv);
+    page.appendChild(fig);
+    return { anchor: anchor, dy: sp[1], fig: fig, cv: cv, ctx: cv.getContext("2d"), scene: sp[3](), S: 0, dpr: 0, p: -1 };
+  }).filter(Boolean);
+
+  function place() {
+    var top = page.getBoundingClientRect().top;
+    figs.forEach(function (f) {
+      f.fig.style.top = Math.round(f.anchor.getBoundingClientRect().top - top + f.dy) + "px";
+      f.docTop = f.fig.getBoundingClientRect().top + window.scrollY;
+    });
+  }
+  function fit(f) {
+    var S = Math.round(f.cv.getBoundingClientRect().width), dpr = window.devicePixelRatio || 1;
+    if (S === f.S && dpr === f.dpr) return;
+    f.S = S; f.dpr = dpr;
+    f.cv.width = Math.round(S * dpr); f.cv.height = Math.round(S * dpr);
+    f.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    f.p = -1;
+  }
+  function render(force) {
+    if (!wide.matches) return;
+    var vh = window.innerHeight;
+    figs.forEach(function (f) {
+      var r = f.cv.getBoundingClientRect();
+      if (r.bottom < -40 || r.top > vh + 40) return;
+      fit(f);
+      if (!f.S) return;
+      // Scroll range over which this figure is on screen, clipped to the
+      // scrolling actually possible, so every figure plays from 0 to 1.
+      var maxS = document.documentElement.scrollHeight - vh;
+      var s0 = Math.max(0, f.docTop - vh), s1 = Math.min(maxS, f.docTop + r.height);
+      var p = s1 > s0 ? clamp01((window.scrollY - s0) / (s1 - s0)) : 1;
+      if (!force && Math.abs(p - f.p) < 0.0005) return;
+      f.p = p;
+      f.ctx.clearRect(0, 0, f.S, f.S);
+      f.ctx.save(); f.scene.draw(f.ctx, f.S, p); f.ctx.restore();
+    });
+  }
+  var queued = false;
+  function schedule(force) {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; render(force); });
+  }
+  function relayout() { place(); schedule(true); }
+
+  readColors();
+  relayout();
+  window.addEventListener("scroll", function () { schedule(false); }, { passive: true });
+  window.addEventListener("resize", relayout);
+  window.addEventListener("load", relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+  [wide, window.matchMedia("(prefers-color-scheme: dark)")].forEach(function (mq) {
+    var cb = function () { readColors(); relayout(); };
+    if (mq.addEventListener) mq.addEventListener("change", cb); else mq.addListener(cb);
+  });
+  var toggle = document.querySelector(".theme-toggle");
+  if (toggle) toggle.addEventListener("click", function () { setTimeout(function () { readColors(); schedule(true); }, 0); });
+})();

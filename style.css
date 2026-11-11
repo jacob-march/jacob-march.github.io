@@ -204,3 +204,22 @@ footer p { margin: 0; }
 /* email is written out ("[at]", "[dot]") rather than linked, to deter scrapers */
 .email { color: var(--text); }
 footer .email { color: inherit; }
+
+/* ------------------------------------------------------------------ margin figures
+   Small diagrams drawn by margins.js, placed in the side margins beside the
+   text and scrolling with it, 20px from the text column; only on screens
+   wide enough to fit them. */
+.mfig { display: none; }
+@media (min-width: 980px) {
+  .page { position: relative; }
+  .mfig {
+    display: block;
+    position: absolute;
+    width: 116px;
+    height: 116px;
+    pointer-events: none;
+  }
+  .mfig.left { left: -112px; }   /* 116px figure, page padding 24px: 20px gap to the text */
+  .mfig.right { right: -112px; }
+  .mfig canvas { display: block; width: 116px; height: 116px; }
+}
