@@ -9,7 +9,7 @@
      right  Penrose diagram of the eternal AdS black hole; the ER bridge grows
      left   {5,4} tiling; a boundary interval grows and its entanglement wedge fills in
      right  two intervals; RT phase transition, then E_W of the connected wedge
-     left   Page curve of an evaporating black hole
+     left   Page curve of an evaporating black hole, with the replica saddles switching
      right  corotating m = 2 mode on a finite-element mesh around a rotating black hole
      left   light bending around a Schwarzschild black hole
      right  relativistic perihelion precession                                    */
@@ -288,10 +288,36 @@
   // Page curve. Hawking's radiation entropy keeps rising (dashed); the black
   // hole's Bekenstein-Hawking entropy falls as it evaporates (M^3 ~ t_evap - t);
   // the fine-grained entropy follows the smaller of the two.
+  // Inset: the two saddles of the replica computation (n = 2 copies of the black
+  // hole). Before the Page time the disconnected (Hawking) saddle dominates;
+  // after it the replica wormhole, which joins the copies' interiors and gives
+  // the island, takes over. The subdominant connection is drawn faintly.
   function PageCurve() {
-    var k = 1.4;
+    var k = 1.4, tPage = 1 - Math.pow(k / (1 + k), 1.5);
     function sbh(t) { return Math.pow(Math.max(0, 1 - t), 2 / 3); }
     function shaw(t) { return k * (1 - sbh(t)); }
+    function replicas(ctx, cx, cy, t) {
+      var w = clamp01((t - tPage) / 0.035 + 0.5); w = w * w * (3 - 2 * w);
+      var d = 9.5, R0 = 6.2, nh = 2.6, a = Math.asin(nh / R0), ox = R0 * Math.cos(a);
+      var Lx = cx - d, Rx = cx + d;
+      var joined = new Path2D();
+      joined.arc(Lx, cy, R0, -a, a, true);
+      joined.quadraticCurveTo(cx, cy + 0.4 * nh, Rx - ox, cy + nh);
+      joined.arc(Rx, cy, R0, Math.PI - a, Math.PI + a, true);
+      joined.quadraticCurveTo(cx, cy - 0.4 * nh, Lx + ox, cy - nh);
+      joined.closePath();
+      var apart = new Path2D();
+      apart.arc(Lx, cy, R0, 0, TAU); apart.moveTo(Rx + R0, cy); apart.arc(Rx, cy, R0, 0, TAU);
+      if (w < 1) { ctx.fillStyle = col(C.accent, 0.28 * (1 - w)); ctx.fill(apart); }
+      if (w > 0) { ctx.fillStyle = col(C.accent, 0.28 * w); ctx.fill(joined); }
+      ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.9); ctx.stroke(apart);
+      ctx.beginPath();
+      ctx.moveTo(Lx + ox, cy + nh); ctx.quadraticCurveTo(cx, cy + 0.4 * nh, Rx - ox, cy + nh);
+      ctx.moveTo(Lx + ox, cy - nh); ctx.quadraticCurveTo(cx, cy - 0.4 * nh, Rx - ox, cy - nh);
+      ctx.setLineDash(w < 0.5 ? [1.2, 1.6] : []);
+      ctx.strokeStyle = col(w < 0.5 ? C.muted : C.accent, 0.35 + 0.65 * w);
+      ctx.stroke(); ctx.setLineDash([]);
+    }
     function curve(f, t0, t1, X, Y) {
       var pts = [];
       for (var i = 0; i <= 80; i++) { var t = t0 + (t1 - t0) * i / 80; pts.push([X(t), Y(f(t))]); }
@@ -313,12 +339,7 @@
         polyline(ctx, pc);
         var end = pc[pc.length - 1];
         ctx.fillStyle = col(C.accent); ctx.beginPath(); ctx.arc(end[0], end[1], 2.3, 0, TAU); ctx.fill();
-        var rad = 8 * Math.pow(Math.max(0, 1 - tn), 1 / 3);
-        if (rad > 0.4) {
-          ctx.beginPath(); ctx.arc(X(0.3), Y(1.24), rad, 0, TAU);
-          ctx.fillStyle = HOLE; ctx.fill();
-          ctx.lineWidth = 0.8; ctx.strokeStyle = col(C.muted, 0.9); ctx.stroke();
-        }
+        replicas(ctx, X(0.3), Y(1.24), tn);
       }
     };
   }
