@@ -10,10 +10,10 @@
      left   {5,4} tiling; a boundary interval grows and its entanglement wedge fills in
      right  mixed-state holographic secret sharing (three regions, purifier in the gaps)
      left   Page curve of an evaporating black hole, with the replica saddles switching
-     right  corotating m = 2 mode on a finite-element mesh around a rotating black hole
+     right  double trumpet wormhole and the ramp of the spectral form factor
      left   light bending around a Schwarzschild black hole
      right  MERA; the causal cone of a growing interval
-     left   double trumpet wormhole and the ramp of the spectral form factor        */
+     left   corotating m = 2 mode on a finite-element mesh around a rotating black hole */
 (function () {
   "use strict";
   if (!window.matchMedia || !window.Path2D) return;
@@ -335,7 +335,7 @@
     return {
       draw: function (ctx, S, p) {
         if (!cache || cache.S !== S) cache = paths(S);
-        var X = S / 2, Y = S / 2, R = S / 2 - 2, phase = 10 * p;
+        var X = S / 2, Y = S / 2, R = S / 2 - 2, phase = 4 * p;
         tris.forEach(function (tr) {
           var v = tr.amp * Math.cos(m * tr.phi - phase);
           ctx.fillStyle = v > 0 ? col(C.accent, 0.78 * v) : col(C.text, 0.4 * -v);
@@ -600,10 +600,10 @@
     ["#research > p:last-of-type", 0, "left", Tiling],
     ["#papers", 0, "right", MixedSharing],
     ["#papers .pubs li:nth-child(2)", 0, "left", PageCurve],
-    ["#papers .pubs li:nth-child(4)", 0, "right", BlackHoleMode],
+    ["#papers .pubs li:nth-child(4)", 0, "right", DoubleTrumpet],
     ["#teaching", 0, "left", Lensing],
     ["#teaching .plain li:nth-child(3)", 0, "right", MERA],
-    ["#background", 10, "left", DoubleTrumpet]
+    ["#background", 10, "left", BlackHoleMode]
   ];
   var figs = specs.map(function (sp) {
     var anchor = document.querySelector(sp[0]);
