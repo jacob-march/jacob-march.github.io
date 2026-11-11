@@ -109,14 +109,23 @@ nav a:hover { color: var(--accent); }
 h1 { margin: 0 0 14px; font-size: 30px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
 .intro p { margin: 0 0 14px; }
 
-.links { display: flex; flex-wrap: wrap; gap: 4px 0; margin-top: 18px !important; font-size: 15.5px; }
+/* Every link gets a leading "·"; the row is shifted left by one separator
+   width and clipped, so whichever link starts a line hides its separator. */
+.intro .links {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  margin: 18px 0 14px -22px;
+  clip-path: inset(-6px -6px -6px 22px);
+  font-size: 15.5px;
+}
 .links a { white-space: nowrap; }
-.links a + a::before {
+.links a::before {
   content: "·";
   display: inline-block;
-  padding: 0 9px;
+  width: 22px;
+  text-align: center;
   color: var(--muted);
-  text-decoration: none;
 }
 
 @media (max-width: 640px) {
