@@ -122,6 +122,8 @@ h1 { margin: 0 0 14px; font-size: 30px; font-weight: 600; line-height: 1.2; lett
   font-size: 15.5px;
 }
 .links > * { white-space: nowrap; }
+/* on phones the email takes its own line, so the links stay together below it */
+@media (max-width: 600px) { .intro .links .email { flex-basis: 100%; } }
 .links > *::before {
   content: "·";
   display: inline-block;
