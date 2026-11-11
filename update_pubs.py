@@ -122,6 +122,8 @@ def main():
 
     indent = m.group("indent")
     items = "\n".join(render(h["metadata"], indent) for h in hits)
+    # external links open in a new tab
+    items = re.sub(r'(<a [^>]*?href="https?://[^"]+")', r'\1 target="_blank" rel="noopener"', items)
     block = f'{indent}{m.group("start")}\n{items}\n{indent}{m.group("end")}'
     INDEX.write_text(page[:m.start()] + block + page[m.end():], encoding="utf-8")
 
