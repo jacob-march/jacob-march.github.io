@@ -104,6 +104,8 @@ nav a:hover { color: var(--accent); }
   height: auto;
   border-radius: 6px;
   display: block;
+  /* a pale green block offset behind the photo, so it sits on something */
+  box-shadow: 10px 10px 0 color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .intro .role { margin: -8px 0 16px; color: var(--muted); }
@@ -137,7 +139,7 @@ h1 { margin: 0 0 14px; font-size: 30px; font-weight: 600; line-height: 1.2; lett
 @media (max-width: 640px) {
   .intro { grid-template-columns: 104px 1fr; column-gap: 16px; row-gap: 0; padding-top: 32px; }
   .intro > div { display: contents; }
-  .photo { width: 104px; grid-row: 1 / span 2; align-self: center; }
+  .photo { width: 104px; grid-row: 1 / span 2; align-self: center; box-shadow: 6px 6px 0 color-mix(in srgb, var(--accent) 16%, transparent); }
   .intro h1 { grid-column: 2; align-self: end; margin-bottom: 6px; font-size: 26px; }
   .intro .role { grid-column: 2; align-self: start; margin: 0; font-size: 15.5px; line-height: 1.5; }
   .intro > div > p:not(.role) { grid-column: 1 / -1; }
