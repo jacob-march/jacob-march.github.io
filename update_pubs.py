@@ -70,44 +70,35 @@ def render(meta, indent):
     inspire = f"https://inspirehep.net/literature/{recid}"
     eprints = meta.get("arxiv_eprints") or []
     arxiv = eprints[0]["value"] if eprints else None
-    cat = eprints[0].get("categories", [None])[0] if eprints else None
     dois = meta.get("dois") or []
     doi = dois[0]["value"] if dois else None
     pub = next((p for p in meta.get("publication_info", []) if p.get("journal_title")), None)
 
     date = meta.get("earliest_date", "")
+    meta_bits = []
     if pub:
         artid = pub.get("artid") or pub.get("page_start") or ""
         vol = pub.get("journal_volume", "")
-        venue = (f'<span class="badge">Published</span>'
-                 f'<span class="venue">{esc(journal_name(pub["journal_title"]))} '
-                 f'{esc(vol)} ({pub.get("year", date[:4])}) {esc(artid)}</span>')
+        venue = esc(f'{journal_name(pub["journal_title"])} {vol} '
+                    f'({pub.get("year", date[:4])}) {artid}'.strip())
+        meta_bits.append(f'<a href="https://doi.org/{esc(doi)}">{venue}</a>' if doi else venue)
     else:
         when = date[:4]
         if len(date) >= 7:
             when = f"{MONTHS[int(date[5:7]) - 1]} {date[:4]}"
-        ident = f"arXiv:{arxiv}" + (f" [{cat}]" if cat else "") if arxiv else ""
-        venue = (f'<span class="badge preprint">Preprint</span>'
-                 f'<span class="venue muted">{esc(" · ".join(x for x in (ident, when) if x))}</span>')
-
-    links = []
+        meta_bits.append(f"preprint, {when}" if when else "preprint")
     if arxiv:
-        links.append(f'<a href="https://arxiv.org/abs/{arxiv}">arXiv</a>')
-        links.append(f'<a href="https://arxiv.org/pdf/{arxiv}">PDF</a>')
-    if doi:
-        links.append(f'<a href="https://doi.org/{esc(doi)}">Journal</a>')
-    links.append(f'<a href="{inspire}">INSPIRE</a>')
+        meta_bits.append(f'<a href="https://arxiv.org/abs/{arxiv}">arXiv:{arxiv}</a>')
+        meta_bits.append(f'<a href="https://arxiv.org/pdf/{arxiv}">pdf</a>')
+    meta_bits.append(f'<a href="{inspire}">inspire</a>')
     href = f"https://arxiv.org/abs/{arxiv}" if arxiv else inspire
 
-    i1, i2, i3 = indent, indent + "  ", indent + "    "
+    i1, i2 = indent, indent + "  "
     return "\n".join([
         f'{i1}<li class="pub">',
-        f'{i2}<h3 class="pub-title"><a href="{href}">{esc(title)}</a></h3>',
-        f'{i2}<p class="pub-authors">{", ".join(names)}</p>',
-        f'{i2}<div class="pub-meta">',
-        f'{i3}{venue}',
-        f'{i3}<span class="pub-links">{" ".join(links)}</span>',
-        f'{i2}</div>',
+        f'{i2}<a class="pub-title" href="{href}">{esc(title)}</a><br>',
+        f'{i2}<span class="pub-authors">{", ".join(names)}</span><br>',
+        f'{i2}<span class="pub-meta">{" · ".join(meta_bits)}</span>',
         f'{i1}</li>',
     ])
 

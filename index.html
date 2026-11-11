@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Jacob March · Physics, Northeastern University</title>
-  <meta name="description" content="Jacob March is a physics Ph.D. student at Northeastern University working on quantum information and quantum gravity: holographic entanglement, reflected entropy, tensor networks and quantum error correction.">
+  <title>Jacob March</title>
+  <meta name="description" content="Jacob March, physics Ph.D. student at Northeastern University working on quantum information and quantum gravity.">
   <meta name="author" content="Jacob March">
+  <!-- If the site moves to a custom domain, update these three URLs. -->
+  <link rel="canonical" href="https://jacob-march.github.io/">
+  <meta property="og:url" content="https://jacob-march.github.io/">
+  <meta property="og:image" content="https://jacob-march.github.io/photo.jpg">
   <meta property="og:type" content="profile">
   <meta property="og:title" content="Jacob March">
   <meta property="og:description" content="Physics Ph.D. student at Northeastern University working on quantum information and quantum gravity.">
-  <!-- Once the custom domain is live, uncomment and fill in:
-  <link rel="canonical" href="https://YOUR-DOMAIN/">
-  <meta property="og:url" content="https://YOUR-DOMAIN/">
-  -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
   <link rel="stylesheet" href="style.css">
   <script>
     // Apply a saved light/dark choice before first paint (no flash).
@@ -27,242 +27,122 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Jacob March",
+    "url": "https://jacob-march.github.io/",
+    "image": "https://jacob-march.github.io/photo.jpg",
     "jobTitle": "Ph.D. Student in Physics",
     "affiliation": { "@type": "CollegeOrUniversity", "name": "Northeastern University" },
     "alumniOf": { "@type": "CollegeOrUniversity", "name": "Grinnell College" },
     "email": "mailto:march.j@northeastern.edu",
-    "knowsAbout": ["Quantum information", "Quantum gravity", "Holography", "AdS/CFT", "Quantum error correction"],
     "sameAs": [
       "https://orcid.org/0000-0001-7027-7804",
-      "https://inspirehep.net/authors/3101559"
+      "https://inspirehep.net/authors/3101559",
+      "https://github.com/jacob-march"
     ]
   }
   </script>
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
-
-  <header class="site-header">
-    <div class="container nav-row">
-      <a class="brand" href="#top">Jacob March</a>
+  <div class="page">
+    <header class="top">
+      <a class="name" href="./">Jacob March</a>
       <nav aria-label="Sections">
-        <a href="#research">Research</a>
-        <a href="#publications">Publications</a>
-        <a href="#teaching">Teaching</a>
-        <a href="cv.pdf">CV</a>
-        <a href="#contact">Contact</a>
+        <a href="#research">research</a>
+        <a href="#papers">papers</a>
+        <a href="#teaching">teaching</a>
+        <a href="cv.pdf">cv</a>
+        <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode" title="light / dark">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>
+        </button>
       </nav>
-      <button class="theme-toggle" type="button" aria-label="Switch between light and dark mode" title="Light / dark">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
-      </button>
-    </div>
-  </header>
+    </header>
 
-  <main id="main">
-    <section class="hero container" id="top">
-      <div class="avatar" aria-hidden="true">JM</div>
-      <!-- To use a headshot: save it as photo.jpg next to this file and replace the div above with
-           <img class="avatar" src="photo.jpg" alt="Jacob March" width="132" height="132"> -->
-      <div class="hero-text">
-        <p class="eyebrow">Ph.D. student · Physics · Northeastern University</p>
-        <h1>Jacob March</h1>
-        <p class="lede">I work on quantum information and quantum gravity, using holography to understand how the entanglement structure of a quantum field theory is encoded in the geometry of spacetime.</p>
-        <p>I'm a physics Ph.D. student at Northeastern University, advised by Prof. Ning Bao. Recent work covers reflected entropy and tensor networks in 3D gravity, holographic quantum secret sharing, and entanglement at finite resources. I'm also developing machine-learning methods for quantum error correction and for the spectral statistics of the SYK model. Before Northeastern, I studied mathematics and physics at Grinnell College.</p>
-        <ul class="links">
-          <li><a class="pill primary" href="mailto:march.j@northeastern.edu">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Email</a></li>
-          <li><a class="pill" href="cv.pdf">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v5h5M10 13h6M10 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            CV</a></li>
-          <li><a class="pill" href="https://inspirehep.net/authors/3101559">INSPIRE-HEP</a></li>
-          <li><a class="pill" href="https://orcid.org/0000-0001-7027-7804">ORCID</a></li>
+    <main>
+      <section class="intro">
+        <img class="photo" src="photo.jpg" alt="Jacob March on the beach, wearing a knit beanie" width="480" height="600">
+        <div>
+          <h1>Hi, I'm Jacob.</h1>
+          <p>I'm a physics Ph.D. student at Northeastern University, where I work with Ning Bao on quantum information and quantum gravity. Mostly I think about holography: how the geometry of a spacetime is written into the entanglement of the quantum system living on its boundary.</p>
+          <p>I also like building things. I use machine learning on problems in quantum error correction and many-body physics, and on the side I built <i>Supreme Physics</i>, an online physics tutoring platform that I still maintain.</p>
+          <p class="links">
+            <a href="mailto:march.j@northeastern.edu">march.j@northeastern.edu</a>
+            <a href="cv.pdf">CV</a>
+            <a href="https://inspirehep.net/authors/3101559">INSPIRE</a>
+            <a href="https://orcid.org/0000-0001-7027-7804">ORCID</a>
+            <a href="https://github.com/jacob-march">GitHub</a>
+          </p>
+        </div>
+      </section>
+
+      <section id="research">
+        <h2>Research</h2>
+        <p>In AdS/CFT, a theory of gravity is equivalent to a conformal field theory one dimension down. I'm interested in what quantum information theory can tell us about that dictionary, and lately that has meant:</p>
+        <ul>
+          <li>reflected entropy and coarse-grained tensor networks in 3D gravity;</li>
+          <li>phase transitions and uberholography in pure-state geometries;</li>
+          <li>the combinatorics of holographic quantum secret sharing;</li>
+          <li>the capacity of entanglement and holographic entropies at finite resources.</li>
         </ul>
-      </div>
-    </section>
+        <p>On the computational side, I'm training graph neural network decoders for the triangular color code (built on its <a href="https://github.com/jacob-march/LightsOut">LightsOut</a> formulation), working on decoders for non-abelian topological codes, and using normalizing flows to learn the spectrum of the SYK model at sizes exact diagonalization can't reach.</p>
+        <p>Before grad school I worked on quantum fields around rotating black holes at Grinnell College, and on jet substructure with the CMS heavy-ion group at École Polytechnique.</p>
+      </section>
 
-    <section class="section container" id="research">
-      <header class="section-head">
-        <p class="eyebrow">Research</p>
-        <h2>What I work on</h2>
-      </header>
-      <div class="cards">
-        <article class="card">
-          <span class="tag">Current</span>
-          <h3>Holographic entanglement</h3>
-          <p>Reflected entropy from coarse-grained tensor networks in 3D gravity, phase transitions and uberholography of pure-state geometries, and the capacity of entanglement when resources are finite.</p>
-        </article>
-        <article class="card">
-          <span class="tag">Current</span>
-          <h3>Holographic quantum secret sharing</h3>
-          <p>The combinatorial structure of secret-sharing schemes in holography: which collections of boundary regions can recover information encoded in the bulk.</p>
-        </article>
-        <article class="card">
-          <span class="tag">Current</span>
-          <h3>Machine learning for quantum codes</h3>
-          <p>Graph neural network decoders for the triangular color code, structured by its LightsOut formulation, and learned decoders for non-abelian topological codes.</p>
-        </article>
-        <article class="card">
-          <span class="tag">Current</span>
-          <h3>SYK spectral statistics</h3>
-          <p>Normalizing flows that learn the Sachdev–Ye–Kitaev spectral distribution, to extrapolate beyond exact diagonalization to large N and probe deviations from random-matrix theory.</p>
-        </article>
-      </div>
-
-      <h3 class="subhead">Earlier work</h3>
-      <div class="cards">
-        <article class="card">
-          <span class="tag tag-muted">Grinnell College</span>
-          <h3>Quantum fields around black holes</h3>
-          <p>2D holographic descriptions of 4D Kerr and Kerr–Newman–AdS black holes from scalar probes, and finite-element calculations of non-spherically-symmetric bound states, which fed into a paper on superradiant suppression in conformal Weyl gravity.</p>
-        </article>
-        <article class="card">
-          <span class="tag tag-muted">CMS · École Polytechnique</span>
-          <h3>Jet substructure</h3>
-          <p>Monte Carlo studies at the Laboratoire Leprince-Ringuet showing that secondary Lund jet planes isolate gluon-enriched jet samples, contributing analysis to a <i>JHEP</i> (2024) study.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section container" id="publications">
-      <header class="section-head">
-        <p class="eyebrow">Publications</p>
+      <section id="papers">
         <h2>Papers</h2>
-        <p class="note">Authors are listed alphabetically, following hep-th convention. Also on <a href="https://inspirehep.net/authors/3101559">INSPIRE-HEP</a>.</p>
-      </header>
-      <ol class="pubs">
-        <!-- PUBS:START (generated by update_pubs.py; do not edit by hand) -->
-        <li class="pub">
-          <h3 class="pub-title"><a href="https://arxiv.org/abs/2608.26377">The Capacity of Entanglement and Holographic Entropies at Finite Resources</a></h3>
-          <p class="pub-authors">Ning Bao, <span class="me">Jacob March</span></p>
-          <div class="pub-meta">
-            <span class="badge preprint">Preprint</span><span class="venue muted">arXiv:2608.26377 [hep-th] · Aug 2026</span>
-            <span class="pub-links"><a href="https://arxiv.org/abs/2608.26377">arXiv</a> <a href="https://arxiv.org/pdf/2608.26377">PDF</a> <a href="https://inspirehep.net/literature/3196800">INSPIRE</a></span>
-          </div>
-        </li>
-        <li class="pub">
-          <h3 class="pub-title"><a href="https://arxiv.org/abs/2607.16110">Combinatorial aspects of holographic quantum secret sharing</a></h3>
-          <p class="pub-authors">Ning Bao, Keiichiro Furuya, <span class="me">Jacob March</span></p>
-          <div class="pub-meta">
-            <span class="badge preprint">Preprint</span><span class="venue muted">arXiv:2607.16110 [hep-th] · Jul 2026</span>
-            <span class="pub-links"><a href="https://arxiv.org/abs/2607.16110">arXiv</a> <a href="https://arxiv.org/pdf/2607.16110">PDF</a> <a href="https://inspirehep.net/literature/3181589">INSPIRE</a></span>
-          </div>
-        </li>
-        <li class="pub">
-          <h3 class="pub-title"><a href="https://arxiv.org/abs/2607.06870">Phase transitions and uberholography of holographic pure-state geometries</a></h3>
-          <p class="pub-authors">Ning Bao, Keiichiro Furuya, <span class="me">Jacob March</span></p>
-          <div class="pub-meta">
-            <span class="badge preprint">Preprint</span><span class="venue muted">arXiv:2607.06870 [hep-th] · Jul 2026</span>
-            <span class="pub-links"><a href="https://arxiv.org/abs/2607.06870">arXiv</a> <a href="https://arxiv.org/pdf/2607.06870">PDF</a> <a href="https://inspirehep.net/literature/3178495">INSPIRE</a></span>
-          </div>
-        </li>
-        <li class="pub">
-          <h3 class="pub-title"><a href="https://arxiv.org/abs/2604.04352">Superradiant suppression of non-minimally coupled scalar fields for a rotating charged dS black hole in conformal Weyl gravity</a></h3>
-          <p class="pub-authors">Owen Gartlan, <span class="me">Jacob March</span>, Leo Rodriguez, Shanshan Rodriguez, Yihan Shen</p>
-          <div class="pub-meta">
-            <span class="badge">Published</span><span class="venue">Class. Quantum Grav. 43 (2026) 155026</span>
-            <span class="pub-links"><a href="https://arxiv.org/abs/2604.04352">arXiv</a> <a href="https://arxiv.org/pdf/2604.04352">PDF</a> <a href="https://doi.org/10.1088/1361-6382/ae92e6">Journal</a> <a href="https://inspirehep.net/literature/3139392">INSPIRE</a></span>
-          </div>
-        </li>
-        <li class="pub">
-          <h3 class="pub-title"><a href="https://arxiv.org/abs/2509.10170">Coarse-grained fixed-point tensor networks and holographic reflected entropy in 3D gravity</a></h3>
-          <p class="pub-authors">Ning Bao, Jinwei Chu, Yikun Jiang, <span class="me">Jacob March</span></p>
-          <div class="pub-meta">
-            <span class="badge">Published</span><span class="venue">JHEP 02 (2026) 107</span>
-            <span class="pub-links"><a href="https://arxiv.org/abs/2509.10170">arXiv</a> <a href="https://arxiv.org/pdf/2509.10170">PDF</a> <a href="https://doi.org/10.1007/JHEP02(2026)107">Journal</a> <a href="https://inspirehep.net/literature/2969290">INSPIRE</a></span>
-          </div>
-        </li>
-        <!-- PUBS:END -->
-      </ol>
-    </section>
+        <ol class="pubs" reversed>
+          <!-- PUBS:START (generated by update_pubs.py; do not edit by hand) -->
+          <li class="pub">
+            <a class="pub-title" href="https://arxiv.org/abs/2608.26377">The Capacity of Entanglement and Holographic Entropies at Finite Resources</a><br>
+            <span class="pub-authors">Ning Bao, <span class="me">Jacob March</span></span><br>
+            <span class="pub-meta">preprint, Aug 2026 · <a href="https://arxiv.org/abs/2608.26377">arXiv:2608.26377</a> · <a href="https://arxiv.org/pdf/2608.26377">pdf</a> · <a href="https://inspirehep.net/literature/3196800">inspire</a></span>
+          </li>
+          <li class="pub">
+            <a class="pub-title" href="https://arxiv.org/abs/2607.16110">Combinatorial aspects of holographic quantum secret sharing</a><br>
+            <span class="pub-authors">Ning Bao, Keiichiro Furuya, <span class="me">Jacob March</span></span><br>
+            <span class="pub-meta">preprint, Jul 2026 · <a href="https://arxiv.org/abs/2607.16110">arXiv:2607.16110</a> · <a href="https://arxiv.org/pdf/2607.16110">pdf</a> · <a href="https://inspirehep.net/literature/3181589">inspire</a></span>
+          </li>
+          <li class="pub">
+            <a class="pub-title" href="https://arxiv.org/abs/2607.06870">Phase transitions and uberholography of holographic pure-state geometries</a><br>
+            <span class="pub-authors">Ning Bao, Keiichiro Furuya, <span class="me">Jacob March</span></span><br>
+            <span class="pub-meta">preprint, Jul 2026 · <a href="https://arxiv.org/abs/2607.06870">arXiv:2607.06870</a> · <a href="https://arxiv.org/pdf/2607.06870">pdf</a> · <a href="https://inspirehep.net/literature/3178495">inspire</a></span>
+          </li>
+          <li class="pub">
+            <a class="pub-title" href="https://arxiv.org/abs/2604.04352">Superradiant suppression of non-minimally coupled scalar fields for a rotating charged dS black hole in conformal Weyl gravity</a><br>
+            <span class="pub-authors">Owen Gartlan, <span class="me">Jacob March</span>, Leo Rodriguez, Shanshan Rodriguez, Yihan Shen</span><br>
+            <span class="pub-meta"><a href="https://doi.org/10.1088/1361-6382/ae92e6">Class. Quantum Grav. 43 (2026) 155026</a> · <a href="https://arxiv.org/abs/2604.04352">arXiv:2604.04352</a> · <a href="https://arxiv.org/pdf/2604.04352">pdf</a> · <a href="https://inspirehep.net/literature/3139392">inspire</a></span>
+          </li>
+          <li class="pub">
+            <a class="pub-title" href="https://arxiv.org/abs/2509.10170">Coarse-grained fixed-point tensor networks and holographic reflected entropy in 3D gravity</a><br>
+            <span class="pub-authors">Ning Bao, Jinwei Chu, Yikun Jiang, <span class="me">Jacob March</span></span><br>
+            <span class="pub-meta"><a href="https://doi.org/10.1007/JHEP02(2026)107">JHEP 02 (2026) 107</a> · <a href="https://arxiv.org/abs/2509.10170">arXiv:2509.10170</a> · <a href="https://arxiv.org/pdf/2509.10170">pdf</a> · <a href="https://inspirehep.net/literature/2969290">inspire</a></span>
+          </li>
+          <!-- PUBS:END -->
+        </ol>
+      </section>
 
-    <section class="section container" id="teaching">
-      <header class="section-head">
-        <p class="eyebrow">Teaching</p>
-        <h2>Teaching &amp; mentoring</h2>
-      </header>
-      <ul class="timeline">
-        <li>
-          <div class="when">2024 – now</div>
-          <div>
-            <h3>Teaching Assistant, Northeastern University</h3>
-            <p><i>Introductory Physics Laboratory</i>: mini-lectures and experiment supervision for life-science students. <i>Advanced Physics Laboratory</i>: guiding upper-level undergraduates through the design, analysis and write-up of research-grade experiments.</p>
-          </div>
-        </li>
-        <li>
-          <div class="when">2023 – 2024</div>
-          <div>
-            <h3>Physics Workshop Teaching Assistant, Grinnell College</h3>
-            <p>Hands-on, experiment-based introductory physics emphasizing conceptual understanding and collaborative learning.</p>
-          </div>
-        </li>
-        <li>
-          <div class="when">2020 – now</div>
-          <div>
-            <h3>Founder &amp; Lead Developer, Supreme Physics</h3>
-            <p>An educational platform for online physics tutoring. I built and maintain the software (scheduling, payments, sessions) and train new tutors.</p>
-          </div>
-        </li>
-      </ul>
-    </section>
+      <section id="teaching">
+        <h2>Teaching</h2>
+        <ul class="plain">
+          <li><span class="when">2024–</span> TA at Northeastern. I led the recitation lectures for <i>Introduction to Foundations of Theoretical Physics</i>, and taught in the introductory and advanced physics labs. Intro lab is for life-science students; in advanced lab, upper-level undergrads design and write up their own experiments.</li>
+          <li><span class="when">2023–24</span> TA for the physics workshop courses at Grinnell.</li>
+          <li><span class="when">2020–</span> Founder of <i>Supreme Physics</i>: I built the platform and train its tutors.</li>
+        </ul>
+      </section>
 
-    <section class="section container" id="background">
-      <div class="two-col">
-        <div>
-          <h2 class="col-title">Education</h2>
-          <ul class="timeline compact">
-            <li>
-              <div class="when">2029</div>
-              <div><h3>Ph.D., Physics (expected)</h3><p>Northeastern University</p></div>
-            </li>
-            <li>
-              <div class="when">2026</div>
-              <div><h3>M.A., Physics</h3><p>Northeastern University</p></div>
-            </li>
-            <li>
-              <div class="when">2024</div>
-              <div><h3>B.A., Mathematics &amp; Physics, with Honors</h3><p>Grinnell College</p></div>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h2 class="col-title">Honors</h2>
-          <ul class="timeline compact">
-            <li>
-              <div class="when">2024</div>
-              <div><h3>H. George Apostle Prize in Physics</h3><p>Grinnell College, awarded to one or two graduating physics majors</p></div>
-            </li>
-            <li>
-              <div class="when">2019 – 2024</div>
-              <div><h3>Founder's Scholarship</h3><p>Grinnell College</p></div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </section>
+      <section id="background">
+        <h2>Background</h2>
+        <ul class="plain">
+          <li><span class="when">2029</span> Ph.D. in Physics, Northeastern University (expected)</li>
+          <li><span class="when">2026</span> M.A. in Physics, Northeastern University</li>
+          <li><span class="when">2024</span> B.A. in Mathematics &amp; Physics with Honors, Grinnell College, and the H. George Apostle Prize in Physics</li>
+        </ul>
+        <p>The full story is in my <a href="cv.pdf">CV</a>.</p>
+      </section>
+    </main>
 
-    <section class="section container" id="contact">
-      <header class="section-head">
-        <p class="eyebrow">Contact</p>
-        <h2>Get in touch</h2>
-      </header>
-      <div class="contact-card">
-        <div>
-          <p>Email is the best way to reach me.</p>
-          <a class="email" href="mailto:march.j@northeastern.edu">march.j@northeastern.edu</a>
-        </div>
-        <address>
-          Department of Physics<br>
-          Northeastern University<br>
-          Boston, MA 02115
-        </address>
-      </div>
-    </section>
-  </main>
-
-  <footer class="container site-footer">
-    <p>© 2026 Jacob March</p>
-  </footer>
+    <footer>
+      <p>Department of Physics, Northeastern University, Boston MA · <a href="mailto:march.j@northeastern.edu">march.j@northeastern.edu</a></p>
+    </footer>
+  </div>
 
   <script>
     // Light/dark toggle; remembers the choice when storage is available.
@@ -295,7 +175,7 @@
         var auto = document.createElement("script");
         auto.src = base + "contrib/auto-render.min.js";
         auto.onload = function () {
-          window.renderMathInElement(document.getElementById("publications"), {
+          window.renderMathInElement(document.getElementById("papers"), {
             delimiters: [{ left: "$", right: "$", display: false }]
           });
         };

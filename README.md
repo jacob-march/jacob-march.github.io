@@ -10,7 +10,8 @@ under a custom domain (once set up, see below).
 | `update_pubs.py` | rewrites the publication block in `index.html` from INSPIRE-HEP |
 | `build_cv.sh` | builds the public `cv.pdf` from the Academic CV |
 | `cv.pdf` | **generated** by `build_cv.sh`; do not replace it with the private CV |
-| `favicon.svg` | "JM" tab icon |
+| `photo.jpg` | profile photo |
+| `favicon.svg` | "jm" tab icon |
 | `.nojekyll` | tells GitHub Pages to serve the files as-is |
 
 ## Routine updates
@@ -46,11 +47,10 @@ python3 -m http.server 8765
 
 then open <http://localhost:8765>.
 
-## Headshot
+## Photo
 
-Save a square photo as `photo.jpg` here, then in `index.html` replace
-`<div class="avatar" aria-hidden="true">JM</div>` with
-`<img class="avatar" src="photo.jpg" alt="Jacob March" width="132" height="132">`.
+`photo.jpg` is a 480×600 (4:5) crop with its EXIF metadata stripped. To swap
+it, replace the file with another 4:5 image (strip location data first).
 
 ## Going live on a custom domain
 
@@ -65,6 +65,6 @@ Save a square photo as `photo.jpg` here, then in `index.html` replace
      `2606:50c0:8000::153` … `2606:50c0:8003::153`)
    - `www`: `CNAME` to `<github-username>.github.io`
 5. Once the DNS check passes, tick *Enforce HTTPS*.
-6. In `index.html`, uncomment the `canonical` / `og:url` lines and fill in the
-   domain. Consider adding the site URL to the CV header and to your INSPIRE and
+6. In `index.html`, change the `canonical`, `og:url`, `og:image` and JSON-LD
+   URLs from `jacob-march.github.io` to the new domain. Consider adding the site URL to the CV header and to your INSPIRE and
    ORCID profiles.
