@@ -6,8 +6,8 @@
   --rule: #dfe5e1;
   --accent: #23684b;      /* forest green */
   --accent-line: #a9cbb9;
-  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --sans: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Source Code Pro", ui-monospace, "SF Mono", Menlo, monospace;
   color-scheme: light;
 }
 
