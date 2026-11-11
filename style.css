@@ -132,10 +132,16 @@ h1 { margin: 0 0 14px; font-size: 30px; font-weight: 600; line-height: 1.2; lett
   color: var(--muted);
 }
 
+/* Phones: photo beside the name, title and advisor; the paragraph and links
+   run full width below. The text wrapper dissolves into the grid. */
 @media (max-width: 640px) {
-  .intro { grid-template-columns: 1fr; gap: 22px; padding-top: 36px; }
-  .photo { width: 150px; }
-  h1 { font-size: 27px; }
+  .intro { grid-template-columns: 104px 1fr; column-gap: 16px; row-gap: 0; padding-top: 32px; }
+  .intro > div { display: contents; }
+  .photo { width: 104px; grid-row: 1 / span 2; align-self: center; }
+  .intro h1 { grid-column: 2; align-self: end; margin-bottom: 6px; font-size: 26px; }
+  .intro .role { grid-column: 2; align-self: start; margin: 0; font-size: 15.5px; line-height: 1.5; }
+  .intro > div > p:not(.role) { grid-column: 1 / -1; }
+  .intro .role + p { margin-top: 20px; }
 }
 
 /* ------------------------------------------------------------------ sections */
