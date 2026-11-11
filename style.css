@@ -121,8 +121,8 @@ h1 { margin: 0 0 14px; font-size: 30px; font-weight: 600; line-height: 1.2; lett
   clip-path: inset(-6px -6px -6px 22px);
   font-size: 15.5px;
 }
-.links a { white-space: nowrap; }
-.links a::before {
+.links > * { white-space: nowrap; }
+.links > *::before {
   content: "·";
   display: inline-block;
   width: 22px;
@@ -201,3 +201,7 @@ footer {
 footer p { margin: 0; }
 
 .nowrap { white-space: nowrap; }
+
+/* email is written out ("[at]", "[dot]") rather than linked, to deter scrapers */
+.email { color: var(--text); }
+footer .email { color: inherit; }

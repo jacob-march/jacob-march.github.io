@@ -3,7 +3,8 @@
 #
 # The private CV header carries a home address and phone number. This builds a
 # copy in a temp directory with that header line replaced by the department
-# address + email, then copies the PDF here. The source CV is never modified.
+# address and a spelled-out email, then copies the PDF here. The source CV is
+# never modified.
 #
 # Usage:  ./build_cv.sh            (refresh the CV's publications.bib first with
 #                                   `make bib` in the Academic_CV folder if needed)
@@ -25,12 +26,18 @@ tex = open(path, encoding="utf-8").read()
 m = re.search(r"\{\\small[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\\\\\[3pt\]", tex)
 if not m:
     sys.exit("build_cv: could not find the contact line in cv.tex")
-mail = re.search(r"\\href\{mailto:[^}]*\}\{[^}]*\}", m.group(0))
+mail = re.search(r"\\href\{mailto:([^@}]+)@([^}]+)\}\{[^}]*\}", m.group(0))
 if not mail:
     sys.exit("build_cv: no mailto link in the contact line")
+# Spell the address out ("user [at] host [dot] edu") instead of linking it,
+# so the public PDF doesn't hand scrapers a ready-made address.
+user, host = mail.group(1), mail.group(2)
+spelled = (user + " [at] " + " [dot] ".join(host.split("."))).replace("_", r"\_")
 public = (r"{\small Department of Physics, Northeastern University, Boston, MA"
-          r" \;\textperiodcentered\; " + mail.group(0) + r"}\\[3pt]")
+          r" \;\textperiodcentered\; " + spelled + r"}\\[3pt]")
 tex = tex[:m.start()] + public + tex[m.end():]
+if "mailto:" in tex or re.search(r"[\w.+-]+@[\w-]+\.[\w.]+", tex.split(r"\begin{document}", 1)[1]):
+    sys.exit("build_cv: an email address is still in cv.tex -- not building")
 
 # Refuse to publish anything that still looks like a phone number or street address.
 body = tex.split(r"\begin{document}", 1)[1]
