@@ -185,6 +185,11 @@ ul.plain li { position: relative; padding-left: 84px; margin-bottom: 10px; }
   .when { position: static; display: block; }
 }
 
+/* sub-items under a dated entry (e.g. a prize under a degree) */
+ul.plain .sub { margin: 3px 0 0; padding: 0; list-style: none; }
+ul.plain .sub li { position: relative; margin: 0; padding-left: 16px; }
+ul.plain .sub li::before { content: "–"; position: absolute; left: 0; color: var(--muted); }
+
 /* ------------------------------------------------------------------ papers */
 .pubs { margin: 6px 0 0; padding: 0; list-style: none; }
 .pubs li { margin-bottom: 18px; }

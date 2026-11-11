@@ -639,40 +639,39 @@
   /* =============================================================== driver */
   var page = document.querySelector(".page");
   if (!page) return;
-  // [anchor element, vertical offset, side, figure], in page order. Sides alternate
-  // right, left, right, ...; the first sits just below the Research heading.
+  // Figures in page order; sides alternate right, left, right, ... The first
+  // sits beside the first paragraph under the Research heading and the last
+  // ends level with the bottom of the Education section; the rest are spaced
+  // evenly in between, so every gap between consecutive figures is the same.
+  var START = "#research > p", END = "#education";
   var specs = [
-    ["#research > p", 0, "right", Penrose],
-    ["#research > p:last-of-type", 0, "left", Tiling],
-    ["#papers", 0, "right", MixedSharing],
-    ["#papers .pubs li:nth-child(2)", 0, "left", PageCurve],
-    ["#papers .pubs li:nth-child(4)", 0, "right", DoubleTrumpet],
-    ["#teaching", 0, "left", Lensing],
-    ["#teaching .plain li:nth-child(3)", 0, "right", MERA],
-    ["#background", 10, "left", BlackHoleMode]
+    ["right", Penrose],
+    ["left", Tiling],
+    ["right", MixedSharing],
+    ["left", PageCurve],
+    ["right", DoubleTrumpet],
+    ["left", Lensing],
+    ["right", MERA],
+    ["left", BlackHoleMode]
   ];
+  var startEl = document.querySelector(START), endEl = document.querySelector(END);
+  if (!startEl || !endEl) return;
   var figs = specs.map(function (sp) {
-    var anchor = document.querySelector(sp[0]);
-    if (!anchor) return null;
     var fig = document.createElement("div"), cv = document.createElement("canvas");
-    fig.className = "mfig " + sp[2];
+    fig.className = "mfig " + sp[0];
     fig.setAttribute("aria-hidden", "true");
     fig.appendChild(cv);
     page.appendChild(fig);
-    return { anchor: anchor, dy: sp[1], fig: fig, cv: cv, ctx: cv.getContext("2d"), scene: sp[3](), S: 0, dpr: 0, p: -1 };
-  }).filter(Boolean);
+    return { fig: fig, cv: cv, ctx: cv.getContext("2d"), scene: sp[1](), S: 0, dpr: 0, p: -1 };
+  });
 
-  // Each figure goes beside its anchor, but never above the previous figure (so
-  // the sides keep alternating top to bottom) and never overlapping the last
-  // figure on its own side, whatever the text wrapping at this width.
   function place() {
-    var top = page.getBoundingClientRect().top, prev = -Infinity, sideEnd = {};
-    figs.forEach(function (f) {
-      var y = f.anchor.getBoundingClientRect().top - top + f.dy, side = f.fig.classList.contains("left") ? "left" : "right";
-      y = Math.max(y, prev + 60, (sideEnd[side] == null ? -Infinity : sideEnd[side] + 24));
-      f.fig.style.top = Math.round(y) + "px";
-      prev = y;
-      sideEnd[side] = y + f.fig.offsetHeight;
+    var top = page.getBoundingClientRect().top, n = figs.length;
+    var y0 = startEl.getBoundingClientRect().top - top;
+    var yN = endEl.getBoundingClientRect().bottom - top - figs[n - 1].fig.offsetHeight;
+    var step = n > 1 ? Math.max(80, (yN - y0) / (n - 1)) : 0;   // alternate sides, so same-side gap is 2 * step
+    figs.forEach(function (f, i) {
+      f.fig.style.top = Math.round(y0 + i * step) + "px";
       f.docTop = f.fig.getBoundingClientRect().top + window.scrollY;
     });
   }
