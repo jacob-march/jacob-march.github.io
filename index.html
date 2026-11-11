@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jacob March</title>
-  <meta name="description" content="Jacob March, physics Ph.D. student at Northeastern University working on quantum information and quantum gravity.">
+  <meta name="description" content="Jacob March, Ph.D. candidate in theoretical physics at Northeastern University working on quantum information and quantum gravity.">
   <meta name="author" content="Jacob March">
   <!-- If the site moves to a custom domain, update these three URLs. -->
   <link rel="canonical" href="https://jacob-march.github.io/">
@@ -12,7 +12,7 @@
   <meta property="og:image" content="https://jacob-march.github.io/photo.jpg">
   <meta property="og:type" content="profile">
   <meta property="og:title" content="Jacob March">
-  <meta property="og:description" content="Physics Ph.D. student at Northeastern University working on quantum information and quantum gravity.">
+  <meta property="og:description" content="Ph.D. candidate in theoretical physics at Northeastern University working on quantum information and quantum gravity.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,7 @@
     "name": "Jacob March",
     "url": "https://jacob-march.github.io/",
     "image": "https://jacob-march.github.io/photo.jpg",
-    "jobTitle": "Ph.D. Student in Physics",
+    "jobTitle": "Ph.D. Candidate in Theoretical Physics",
     "affiliation": { "@type": "CollegeOrUniversity", "name": "Northeastern University" },
     "alumniOf": { "@type": "CollegeOrUniversity", "name": "Grinnell College" },
     "email": "mailto:march.j@northeastern.edu",
@@ -60,9 +60,9 @@
       <section class="intro">
         <img class="photo" src="photo.jpg" alt="Jacob March on the beach, wearing a knit beanie" width="480" height="600">
         <div>
-          <h1>Hi, I'm Jacob.</h1>
-          <p>I'm a physics Ph.D. student at Northeastern University, where I work with Ning Bao on quantum information and quantum gravity. Mostly I think about holography: how the geometry of a spacetime is written into the entanglement of the quantum system living on its boundary.</p>
-          <p>I also like building things. I use machine learning on problems in quantum error correction and many-body physics, and on the side I built <i>Supreme Physics</i>, an online physics tutoring platform that I still maintain.</p>
+          <h1>Jacob March</h1>
+          <p class="role">Ph.D. candidate in theoretical physics, <span class="nowrap">Northeastern University</span><br>Advised by Ning Bao</p>
+          <p>I'm a theorist working on quantum information and quantum gravity. Alongside analytic work I do a good deal of computation, and I'm particularly interested in where machine learning is genuinely useful for quantum error correction and many-body physics.</p>
           <p class="links">
             <a href="mailto:march.j@northeastern.edu">march.j@northeastern.edu</a>
             <a href="cv.pdf">CV</a>
@@ -75,15 +75,18 @@
 
       <section id="research">
         <h2>Research</h2>
-        <p>In AdS/CFT, a theory of gravity is equivalent to a conformal field theory one dimension down. I'm interested in what quantum information theory can tell us about that dictionary, and lately that has meant:</p>
-        <ul>
-          <li>reflected entropy and coarse-grained tensor networks in 3D gravity;</li>
-          <li>phase transitions and uberholography in pure-state geometries;</li>
-          <li>the combinatorics of holographic quantum secret sharing;</li>
-          <li>the capacity of entanglement and holographic entropies at finite resources.</li>
-        </ul>
-        <p>On the computational side, I'm training graph neural network decoders for the triangular color code (built on its <a href="https://github.com/jacob-march/LightsOut">LightsOut</a> formulation), working on decoders for non-abelian topological codes, and using normalizing flows to learn the spectrum of the SYK model at sizes exact diagonalization can't reach.</p>
-        <p>Before grad school I worked on quantum fields around rotating black holes at Grinnell College, and on jet substructure with the CMS heavy-ion group at École Polytechnique.</p>
+        <p>I'm broadly interested in two areas, and most of all in what each can teach us about the other.</p>
+        <div class="sides">
+          <div>
+            <h3>Quantum information</h3>
+            <p>Quantum error correction, von Neumann algebras, and entanglement in quantum field theory.</p>
+          </div>
+          <div>
+            <h3>Quantum gravity</h3>
+            <p>Holography and AdS/CFT, black hole physics, and the gravitational path integral.</p>
+          </div>
+        </div>
+        <p>Computationally, I write and maintain research code in Python, PyTorch and C++ and run it at scale on HPC clusters. I've built graph neural network decoders for topological codes and normalizing-flow models of SYK spectral statistics, and I'm always glad to talk with people thinking about machine learning for theoretical physics.</p>
       </section>
 
       <section id="papers">
@@ -93,27 +96,27 @@
           <li class="pub">
             <a class="pub-title" href="https://arxiv.org/abs/2608.26377">The Capacity of Entanglement and Holographic Entropies at Finite Resources</a><br>
             <span class="pub-authors">Ning Bao, <span class="me">Jacob March</span></span><br>
-            <span class="pub-meta">preprint, Aug 2026 · <a href="https://arxiv.org/abs/2608.26377">arXiv:2608.26377</a> · <a href="https://arxiv.org/pdf/2608.26377">pdf</a> · <a href="https://inspirehep.net/literature/3196800">inspire</a></span>
+            <span class="pub-meta">preprint, Aug 2026 · <a href="https://arxiv.org/abs/2608.26377">arXiv</a> · <a href="https://arxiv.org/pdf/2608.26377">pdf</a> · <a href="https://inspirehep.net/literature/3196800">inspire</a></span>
           </li>
           <li class="pub">
             <a class="pub-title" href="https://arxiv.org/abs/2607.16110">Combinatorial aspects of holographic quantum secret sharing</a><br>
             <span class="pub-authors">Ning Bao, Keiichiro Furuya, <span class="me">Jacob March</span></span><br>
-            <span class="pub-meta">preprint, Jul 2026 · <a href="https://arxiv.org/abs/2607.16110">arXiv:2607.16110</a> · <a href="https://arxiv.org/pdf/2607.16110">pdf</a> · <a href="https://inspirehep.net/literature/3181589">inspire</a></span>
+            <span class="pub-meta">preprint, Jul 2026 · <a href="https://arxiv.org/abs/2607.16110">arXiv</a> · <a href="https://arxiv.org/pdf/2607.16110">pdf</a> · <a href="https://inspirehep.net/literature/3181589">inspire</a></span>
           </li>
           <li class="pub">
             <a class="pub-title" href="https://arxiv.org/abs/2607.06870">Phase transitions and uberholography of holographic pure-state geometries</a><br>
             <span class="pub-authors">Ning Bao, Keiichiro Furuya, <span class="me">Jacob March</span></span><br>
-            <span class="pub-meta">preprint, Jul 2026 · <a href="https://arxiv.org/abs/2607.06870">arXiv:2607.06870</a> · <a href="https://arxiv.org/pdf/2607.06870">pdf</a> · <a href="https://inspirehep.net/literature/3178495">inspire</a></span>
+            <span class="pub-meta">preprint, Jul 2026 · <a href="https://arxiv.org/abs/2607.06870">arXiv</a> · <a href="https://arxiv.org/pdf/2607.06870">pdf</a> · <a href="https://inspirehep.net/literature/3178495">inspire</a></span>
           </li>
           <li class="pub">
             <a class="pub-title" href="https://arxiv.org/abs/2604.04352">Superradiant suppression of non-minimally coupled scalar fields for a rotating charged dS black hole in conformal Weyl gravity</a><br>
             <span class="pub-authors">Owen Gartlan, <span class="me">Jacob March</span>, Leo Rodriguez, Shanshan Rodriguez, Yihan Shen</span><br>
-            <span class="pub-meta"><a href="https://doi.org/10.1088/1361-6382/ae92e6">Class. Quantum Grav. 43 (2026) 155026</a> · <a href="https://arxiv.org/abs/2604.04352">arXiv:2604.04352</a> · <a href="https://arxiv.org/pdf/2604.04352">pdf</a> · <a href="https://inspirehep.net/literature/3139392">inspire</a></span>
+            <span class="pub-meta"><a href="https://doi.org/10.1088/1361-6382/ae92e6">Class. Quantum Grav. 43 (2026) 155026</a> · <a href="https://arxiv.org/abs/2604.04352">arXiv</a> · <a href="https://arxiv.org/pdf/2604.04352">pdf</a> · <a href="https://inspirehep.net/literature/3139392">inspire</a></span>
           </li>
           <li class="pub">
             <a class="pub-title" href="https://arxiv.org/abs/2509.10170">Coarse-grained fixed-point tensor networks and holographic reflected entropy in 3D gravity</a><br>
             <span class="pub-authors">Ning Bao, Jinwei Chu, Yikun Jiang, <span class="me">Jacob March</span></span><br>
-            <span class="pub-meta"><a href="https://doi.org/10.1007/JHEP02(2026)107">JHEP 02 (2026) 107</a> · <a href="https://arxiv.org/abs/2509.10170">arXiv:2509.10170</a> · <a href="https://arxiv.org/pdf/2509.10170">pdf</a> · <a href="https://inspirehep.net/literature/2969290">inspire</a></span>
+            <span class="pub-meta"><a href="https://doi.org/10.1007/JHEP02(2026)107">JHEP 02 (2026) 107</a> · <a href="https://arxiv.org/abs/2509.10170">arXiv</a> · <a href="https://arxiv.org/pdf/2509.10170">pdf</a> · <a href="https://inspirehep.net/literature/2969290">inspire</a></span>
           </li>
           <!-- PUBS:END -->
         </ol>
@@ -122,9 +125,9 @@
       <section id="teaching">
         <h2>Teaching</h2>
         <ul class="plain">
-          <li><span class="when">2024–</span> TA at Northeastern. I led the recitation lectures for <i>Introduction to Foundations of Theoretical Physics</i>, and taught in the introductory and advanced physics labs. Intro lab is for life-science students; in advanced lab, upper-level undergrads design and write up their own experiments.</li>
-          <li><span class="when">2023–24</span> TA for the physics workshop courses at Grinnell.</li>
-          <li><span class="when">2020–</span> Founder of <i>Supreme Physics</i>: I built the platform and train its tutors.</li>
+          <li><span class="when">2024–</span> Teaching assistant at Northeastern. I led recitation lectures for <i>Introduction to Foundations of Theoretical Physics</i> and taught the introductory and advanced physics labs.</li>
+          <li><span class="when">2023–24</span> Teaching assistant for the physics workshop courses at Grinnell College.</li>
+          <li><span class="when">2020–</span> Founded <i>Supreme Physics</i>, an online physics tutoring platform. I built and maintain its software, and trained its tutors.</li>
         </ul>
       </section>
 
@@ -135,7 +138,7 @@
           <li><span class="when">2026</span> M.A. in Physics, Northeastern University</li>
           <li><span class="when">2024</span> B.A. in Mathematics &amp; Physics with Honors, Grinnell College, and the H. George Apostle Prize in Physics</li>
         </ul>
-        <p>The full story is in my <a href="cv.pdf">CV</a>.</p>
+        <p>Full details are in my <a href="cv.pdf">CV</a>.</p>
       </section>
     </main>
 

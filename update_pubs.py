@@ -88,7 +88,7 @@ def render(meta, indent):
             when = f"{MONTHS[int(date[5:7]) - 1]} {date[:4]}"
         meta_bits.append(f"preprint, {when}" if when else "preprint")
     if arxiv:
-        meta_bits.append(f'<a href="https://arxiv.org/abs/{arxiv}">arXiv:{arxiv}</a>')
+        meta_bits.append(f'<a href="https://arxiv.org/abs/{arxiv}">arXiv</a>')
         meta_bits.append(f'<a href="https://arxiv.org/pdf/{arxiv}">pdf</a>')
     meta_bits.append(f'<a href="{inspire}">inspire</a>')
     href = f"https://arxiv.org/abs/{arxiv}" if arxiv else inspire
