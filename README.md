@@ -14,6 +14,7 @@ under a custom domain (once set up, see below).
 | `photo.jpg` | profile photo |
 | `favicon.svg` | "jm" tab icon |
 | `.nojekyll` | tells GitHub Pages to serve the files as-is |
+| `sitemap.xml`, `robots.txt` | tell search engines which pages exist; update the `lastmod` dates when the page or CV changes |
 
 ## Routine updates
 
@@ -67,5 +68,6 @@ it, replace the file with another 4:5 image (strip location data first).
    - `www`: `CNAME` to `<github-username>.github.io`
 5. Once the DNS check passes, tick *Enforce HTTPS*.
 6. In `index.html`, change the `canonical`, `og:url`, `og:image` and JSON-LD
-   URLs from `jacob-march.github.io` to the new domain. Consider adding the site URL to the CV header and to your INSPIRE and
+   URLs from `jacob-march.github.io` to the new domain, and do the same in
+   `sitemap.xml` and `robots.txt`. Consider adding the site URL to the CV header and to your INSPIRE and
    ORCID profiles.
